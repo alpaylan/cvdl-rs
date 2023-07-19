@@ -1,0 +1,39 @@
+[
+    {
+        "section-name": "Profile",
+        "schema": "Profile",
+        "elements": [
+            { 
+                "Name": "Alperen",
+                "Surname": "Keles",
+                "Linkedin": "https://linkedin.com/in/alpkeles",
+                "Github": "https://github.com/alpaylan",
+                "Email": "alpkeles99@gmail.com",
+                "Google Scholar": "https://scholar.google.com/citations?user=5T4PvEAAAAAJ&hl=tr" 
+            }
+        ]
+    },
+    {
+        "section-name": "Education",
+        "schema": "Education",
+        "elements": [
+            { 
+                "School": "University of Maryland, College Park",
+                "Degree": "Doctorate of Philosophy",
+                "Department": "Computer Science",
+                "Date-Started": "2021",
+                "Date-Finished": "2026(Expected)",
+                "Location": "Maryland, USA" 
+            },
+            { 
+                "School": "Middle East Technical University",
+                "Degree": "Bachelor of Engineering",
+                "Department": "Computer Engineering",
+                "Date-Started": "2017",
+                "Date-Finished": "2021",
+                "Location": "Ankara, Turkey",
+                "Text": "GPA: 3.66/4.0 ***(top 5% in class of 229)***"
+            }
+        ]
+    }
+]

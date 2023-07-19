@@ -1,0 +1,45 @@
+[
+    {
+        "schema-name": "Education",
+        "element-schema": [
+            { "name": "School", "type": "String" },
+            { "name": "Degree", "type": "String" },
+            { "name": "Department", "type": "String" },
+            { "name": "Date-Started", "type": "Date" },
+            { "name": "Date-Finished", "type": ["Date", "String"] },
+            { "name": "Location", "type": "String" },
+            { "name": "Text", "type": "MarkdownString" }
+        ]
+    },
+    {
+        "schema-name": "General",
+        "element-schema": [
+            { "name": "Title", "type": "String" },
+            { "name": "Subtitle", "type": "String" },
+            { "name": "Text", "type": "String" },
+            { "name": "Date-Started", "type": "Date" },
+            { "name": "Date-Finished", "type": ["Date", "String"] },
+            { "name": "Location", "type": "String" },
+            { "name": "Text", "type": "MarkdownString" }
+        ]
+    },
+    {
+        "schema-name": "Skill",
+        "element-schema": [
+            { "name": "Skill", "type": "String" },
+            { "name": "Information", "type": "String" },
+            { "name": "Level", "type": "Number" }
+        ]
+    },
+    {
+        "schema-name": "Profile",
+        "element-schema": [
+            { "name": "Name", "type": "String" },
+            { "name": "Surname", "type": "String" },
+            { "name": "Linkedin", "type": "String" },
+            { "name": "Github", "type": "String" },
+            { "name": "Email", "type": "String" },
+            { "name": "Google Scholar", "type": "String" }
+        ]
+    }
+]

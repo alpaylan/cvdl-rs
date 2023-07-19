@@ -1,0 +1,18 @@
+[
+    {
+        "schema-name": "Education",
+        "text-layout-schema": "{School} - {Degree}\t\t{Date-Started} - {Date-Finished}\n{Department}\t\t{Location}\n{Text}"
+    },
+    {
+        "schema-name": "General",
+        "text-layout-schema": "{Title} \t\t {Date-Started} - {Date-Finished} \n {Text}"
+    },
+    {
+        "schema-name": "Skill",
+        "text-layout-schema": "{Skill} \t\t {Level} \n {Information}"
+    },
+    {
+        "schema-name": "Profile",
+        "text-layout-schema": "{Name} {Surname} \n\t{Linkedin} \n\t{Github} \n\t{Email} \n\t{Google Scholar}"
+    }
+]
