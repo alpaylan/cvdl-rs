@@ -1,6 +1,8 @@
-use std::collections::HashMap;
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 use serde_with::serde_as;
+use std::collections::HashMap;
+
+use crate::data_schema::DocumentDataType;
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct ResumeData {
@@ -12,16 +14,43 @@ pub struct ResumeData {
 pub struct ResumeSection {
     #[serde(rename = "section-name")]
     pub name: String,
-    pub schema: String,
+    #[serde(rename = "data-schema")]
+    pub data_schema: String,
+    #[serde(rename = "layout-schema")]
+    pub layout_schema: String,
+    #[serde(rename = "data")]
+    #[serde_as(deserialize_as = "HashMap<_, _>")]
+    #[serde(default = "HashMap::new")]
+    pub data: HashMap<ItemName, ItemContent>,
     #[serde_as(deserialize_as = "Vec<HashMap<_, _>>")]
-    pub elements: Vec<HashMap<ElementName, ElementContent>>,
+    pub items: Vec<HashMap<ItemName, ItemContent>>,
 }
 
-pub type ElementName = String;
-pub type ElementContent = String;
+pub type ItemName = String;
+
+#[derive(Serialize, Deserialize, Debug, PartialEq)]
+#[serde(untagged)]
+pub enum ItemContent {
+    None,
+    String(String),
+    List(Vec<ItemContent>),
+}
+
+impl ItemContent {
+    pub fn to_string(&self) -> String {
+        match self {
+            ItemContent::None => String::new(),
+            ItemContent::String(s) => s.clone(),
+            ItemContent::List(l) => l
+                .iter()
+                .map(ItemContent::to_string)
+                .collect::<Vec<String>>()
+                .join(", "),
+        }
+    }
+}
 
 impl ResumeData {
-
     pub fn from_json(json: &str) -> ResumeData {
         let sections: Vec<ResumeSection> = serde_json::from_str(json).unwrap();
         ResumeData { sections }
@@ -38,8 +67,9 @@ mod tests {
         [
     {
         "section-name": "Profile",
-        "schema": "Profile",
-        "elements": [
+        "data-schema": "Profile",
+        "layout-schema": "Profile-Compact",
+        "items": [
             { 
                 "Name": "Alperen",
                 "Surname": "Keles",
@@ -52,8 +82,9 @@ mod tests {
     },
     {
         "section-name": "Education",
-        "schema": "Education",
-        "elements": [
+        "data-schema": "Education",
+        "layout-schema": "Education",
+        "items": [
             { 
                 "School": "University of Maryland, College Park",
                 "Degree": "Doctorate of Philosophy",
@@ -76,15 +107,18 @@ mod tests {
 ]
         "#;
 
-    let resume_data = ResumeData::from_json(json);
-    assert_eq!(resume_data.sections.len(), 2);
-    assert_eq!(resume_data.sections[0].name, "Profile");
-    assert_eq!(resume_data.sections[0].schema, "Profile");
-    assert_eq!(resume_data.sections[0].elements.len(), 1);
-    assert_eq!(resume_data.sections[0].elements[0]["Name"], "Alperen");
-    assert_eq!(resume_data.sections[1].name, "Education");
-    assert_eq!(resume_data.sections[1].schema, "Education");
-    assert_eq!(resume_data.sections[1].elements.len(), 2);
-    assert_eq!(resume_data.sections[1].elements[0]["School"], "University of Maryland, College Park");
+        let resume_data = ResumeData::from_json(json);
+        assert_eq!(resume_data.sections.len(), 2);
+        assert_eq!(resume_data.sections[0].name, "Profile");
+        assert_eq!(resume_data.sections[0].data_schema, "Profile");
+        assert_eq!(resume_data.sections[0].items.len(), 1);
+        assert_eq!(resume_data.sections[0].items[0]["Name"], "Alperen");
+        assert_eq!(resume_data.sections[1].name, "Education");
+        assert_eq!(resume_data.sections[1].data_schema, "Education");
+        assert_eq!(resume_data.sections[1].items.len(), 2);
+        assert_eq!(
+            resume_data.sections[1].items[0]["School"],
+            "University of Maryland, College Park"
+        );
     }
 }

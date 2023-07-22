@@ -19,14 +19,14 @@ and the required layouts.
 
 ### Section Data Schema
 
-A section schema defines elements and their types for a section.
+A section schema defines items and their types for a section.
 
 Example:
 
 ```json
 {
     "schema-name": "Education",
-    "element-schema": [
+    "item-schema": [
         { "name": "School", "type": "String" },
         { "name": "Degree", "type": "String" },
         { "name": "Department", "type": "String" },
@@ -68,7 +68,7 @@ You will also be able to provide rendering directives.
 #### Rendering Directive
 
 A rendering directive is a function from a datatype T into a box. This is the reason the Latex like model
-above does not capture our full intuitions. All elements are rendered into boxes, and the layout schema
+above does not capture our full intuitions. All items are rendered into boxes, and the layout schema
 composes a box. All types have a default rendering directive that is used when no other directive is provided.
 
 There are more complex rendering directives available that composes several datatypes into a box, which is implicitly
@@ -78,24 +78,24 @@ encoded in the latex above.
 {Degree: Italic} - {Department: Bold} 
 ```
 
-We see the dash(-) between two elements, which we know are actually boxes. So, what does dash mean there? If
+We see the dash(-) between two items, which we know are actually boxes. So, what does dash mean there? If
 we desugared the expression we would get a function call similar to below.
 
 ```js
 dashBetween(italic(degree), bold(department))
 ```
 
-### Element Types
+### item Types
 
-An element type must have a name and a default rendering directive. Optionally, element type
-may contain validators and addtional rendering directives. All elements are represented as strings,
+An item type must have a name and a default rendering directive. Optionally, item type
+may contain validators and addtional rendering directives. All items are represented as strings,
 and it is up to the rendering directives to do the parsing/deserialization/decoding. As an example,
 String will be wrapped at box bounds by the default rendering directive, MarkdownString will be
 rendered by respecting italic/link/bold annotations.
 
 ### Section Definitions
 
-A section is defined by its name, the schema it conforms to, and its elements.
+A section is defined by its name, the schema it conforms to, and its items.
 
 Example:
 
@@ -103,7 +103,7 @@ Example:
 {
     "section-name": "Education",
     "schema": "Education",
-    "elements": [
+    "items": [
         { 
             "School": "University of Maryland, College Park",
             "Degree": "Doctorate of Philosophy",
@@ -128,8 +128,8 @@ Example:
 ### Document Layout Schema
 
 A document will have several sections, and it will need to compute its layout by putting those sections together.
-We know that a section has a name and a list of elements defined by the `element-schema`. We also know
-that each element can be rendered into a standalone box. We can vertically compose elements into a
+We know that a section has a name and a list of items defined by the `item-schema`. We also know
+that each item can be rendered into a standalone box. We can vertically compose items into a
 larger box, add section name on top, which will give us the section box. Now, all the document has to do is
 specify how the layers are composed. The language for this layout specification is also WIP, but the
 idea informally looks something like below.

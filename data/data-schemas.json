@@ -1,31 +1,40 @@
 [
     {
         "schema-name": "Education",
-        "element-schema": [
+        "header-schema": [
+            { "name": "Title", "type": "String" }
+        ],
+        "item-schema": [
             { "name": "School", "type": "String" },
             { "name": "Degree", "type": "String" },
             { "name": "Department", "type": "String" },
             { "name": "Date-Started", "type": "Date" },
-            { "name": "Date-Finished", "type": ["Date", "String"] },
+            { "name": "Date-Finished", "type": "Date | String" },
             { "name": "Location", "type": "String" },
             { "name": "Text", "type": "MarkdownString" }
         ]
     },
     {
         "schema-name": "General",
-        "element-schema": [
+        "header-schema": [
+            { "name": "Title", "type": "String" }
+        ],
+        "item-schema": [
             { "name": "Title", "type": "String" },
             { "name": "Subtitle", "type": "String" },
             { "name": "Text", "type": "String" },
             { "name": "Date-Started", "type": "Date" },
-            { "name": "Date-Finished", "type": ["Date", "String"] },
+            { "name": "Date-Finished", "type": "Date | String" },
             { "name": "Location", "type": "String" },
             { "name": "Text", "type": "MarkdownString" }
         ]
     },
     {
         "schema-name": "Skill",
-        "element-schema": [
+        "header-schema": [
+            { "name": "Title", "type": "String" }
+        ],
+        "item-schema": [
             { "name": "Skill", "type": "String" },
             { "name": "Information", "type": "String" },
             { "name": "Level", "type": "Number" }
@@ -33,13 +42,75 @@
     },
     {
         "schema-name": "Profile",
-        "element-schema": [
+        "header-schema": [
             { "name": "Name", "type": "String" },
             { "name": "Surname", "type": "String" },
             { "name": "Linkedin", "type": "String" },
             { "name": "Github", "type": "String" },
             { "name": "Email", "type": "String" },
             { "name": "Google Scholar", "type": "String" }
+        ],
+        "item-schema": [
+            { "name": "Text", "type": "String" },
+            { "name": "URL", "type": "String" }
+        ]
+    },
+    {
+        "schema-name": "Projects",
+        "header-schema": [
+            { "name": "Title", "type": "String" }
+        ],
+        "item-schema": [
+            { "name": "Title", "type": "String" },
+            { "name": "Subtitle", "type": "String" },
+            { "name": "Skills", "type": "List<String>" },
+            { "name": "Date-Started", "type": "Date" },
+            { "name": "Date-Finished", "type": "Date | String" },
+            { "name": "Location", "type": "String" },
+            { "name": "Text", "type": "MarkdownString" }
+        ]
+    },
+    {
+        "schema-name": "Community-Service",
+        "header-schema": [
+            { "name": "Title", "type": "String" }
+        ],
+        "item-schema": [
+            { "name": "Title", "type": "String" },
+            { "name": "Subtitle", "type": "String" },
+            { "name": "Skills", "type": "List<String>" },
+            { "name": "Date-Started", "type": "Date" },
+            { "name": "Date-Finished", "type": "Date | String" },
+            { "name": "URL", "type": "String" },
+            { "name": "Text", "type": "MarkdownString" }
+        ]
+    },
+    {
+        "schema-name": "Work-Experience",
+        "header-schema": [
+            { "name": "Title", "type": "String" }
+        ],
+        "item-schema": [
+            { "name": "Company", "type": "String" },
+            { "name": "Position", "type": "String" },
+            { "name": "Skills", "type": "List<String>" },
+            { "name": "Date-Started", "type": "Date" },
+            { "name": "Date-Finished", "type": "Date | String" },
+            { "name": "Location", "type": "String" },
+            { "name": "Text", "type": "MarkdownString" }
+        ]
+    },
+    {
+        "schema-name": "Publications",
+        "header-schema": [
+            { "name": "Title", "type": "String" }
+        ],
+        "item-schema": [
+            { "name": "Publication-Title", "type": "String" },
+            { "name": "Publication-URL", "type": "String" },
+            { "name": "Venue-Title", "type": "String" },
+            { "name": "Venue-URL", "type": "String" },
+            { "name": "Authors", "type": "List<String>" }
         ]
     }
 ]
