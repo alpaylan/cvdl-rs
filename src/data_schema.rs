@@ -4,19 +4,49 @@ use serde::{Deserialize, Serialize};
 use serde_json;
 use serde_with::{serde_as, DisplayFromStr, SerializeDisplay};
 
+use crate::resume_data::ItemContent;
+
 #[derive(Serialize, Deserialize, Debug, PartialEq)]
 #[serde(untagged)]
 pub enum DocumentDataType {
+    Date,
+    String,
+    MarkdownString,
     Type(String),
     List(Box<DocumentDataType>),
     Types(Vec<DocumentDataType>),
+}
+
+impl DocumentDataType {
+    fn validate(data_type: &DocumentDataType, value: &ItemContent) -> bool {
+        match value {
+            ItemContent::None => unreachable!(),
+            ItemContent::String(_) => match data_type {
+                DocumentDataType::Date => todo!(),
+                DocumentDataType::String => true,
+                DocumentDataType::MarkdownString => true,
+                DocumentDataType::Type(_) => true,
+                DocumentDataType::List(_) => false,
+                DocumentDataType::Types(t) => {
+                    t.iter().any(|t| DocumentDataType::validate(t, value))
+                }
+            },
+            ItemContent::List(items) => {
+                if let DocumentDataType::List(t) = data_type  {
+                    items.iter().all(|i| DocumentDataType::validate(t, i))
+                } else {
+                    false
+                }
+            },
+        }
+    }
 }
 
 impl std::fmt::Display for DocumentDataType {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             DocumentDataType::Type(s) => write!(f, "{}", s),
-            DocumentDataType::List(l) => write!(f, "List{}", l),
+            DocumentDataType::List(l) => write!(f, "List<{}>", l),
             DocumentDataType::Types(t) => write!(
                 f,
                 "{}",
@@ -25,6 +55,9 @@ impl std::fmt::Display for DocumentDataType {
                     .collect::<Vec<String>>()
                     .join(" | ")
             ),
+            DocumentDataType::Date => write!(f, "Date"),
+            DocumentDataType::String => write!(f, "String"),
+            DocumentDataType::MarkdownString => write!(f, "MarkdownString"),
         }
     }
 }
@@ -32,18 +65,25 @@ impl std::fmt::Display for DocumentDataType {
 impl FromStr for DocumentDataType {
     type Err = String;
     fn from_str(s: &str) -> Result<DocumentDataType, Self::Err> {
-        Ok(if s.contains("|") {
-            let types: Vec<&str> = s.split("|").collect();
-            let mut data_types: Vec<DocumentDataType> = Vec::new();
-            for t in types {
-                data_types.push(DocumentDataType::from_str(t.trim())?);
+        Ok(match s {
+            "Date" => DocumentDataType::Date,
+            "String" => DocumentDataType::String,
+            "MarkdownString" => DocumentDataType::MarkdownString,
+            _ => {
+                if s.contains("|") {
+                    let types: Vec<&str> = s.split("|").collect();
+                    let mut data_types: Vec<DocumentDataType> = Vec::new();
+                    for t in types {
+                        data_types.push(DocumentDataType::from_str(t.trim())?);
+                    }
+                    DocumentDataType::Types(data_types)
+                } else if s.starts_with("List") {
+                    let list_type = s.get(5..(s.len() - 1)).unwrap();
+                    DocumentDataType::List(Box::new(DocumentDataType::from_str(list_type)?))
+                } else {
+                    DocumentDataType::Type(s.to_string())
+                }
             }
-            DocumentDataType::Types(data_types)
-        } else if s.starts_with("List") {
-            let list_type = s.get(5..(s.len() - 1)).unwrap();
-            DocumentDataType::List(Box::new(DocumentDataType::from_str(list_type)?))
-        } else {
-            DocumentDataType::Type(s.to_string())
         })
     }
 }
