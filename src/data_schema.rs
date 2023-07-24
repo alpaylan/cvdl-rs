@@ -163,7 +163,7 @@ mod tests {
                     { "name": "Linkedin", "type": "String" },
                     { "name": "Github", "type": "String" },
                     { "name": "Email", "type": "String" },
-                    { "name": "Google Scholar", "type": "String" }
+                    { "name": "Google Scholar", "type": "URLString" }
                 ]
             }
         ]
@@ -173,17 +173,25 @@ mod tests {
         assert_eq!(schema[0].item_schema[0].name, "School");
         assert_eq!(
             schema[0].item_schema[0].data_type,
-            DocumentDataType::from_str("String").unwrap()
+            DocumentDataType::String
         );
         assert_eq!(schema[0].item_schema[1].name, "Degree");
         assert_eq!(
             schema[0].item_schema[1].data_type,
-            DocumentDataType::from_str("String").unwrap()
+            DocumentDataType::String
         );
         assert_eq!(schema[0].item_schema[4].name, "Date-Finished");
         assert_eq!(
             schema[0].item_schema[4].data_type,
-            DocumentDataType::from_str("Date | String").unwrap()
+            DocumentDataType::Types(vec![
+                DocumentDataType::Date,
+                DocumentDataType::String])
+        );
+
+        assert_eq!(schema[3].item_schema[5].name, "Google Scholar");
+        assert_eq!(
+            schema[3].item_schema[5].data_type,
+            DocumentDataType::Type("URLString".to_string())
         );
     }
 }
