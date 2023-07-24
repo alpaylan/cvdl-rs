@@ -1,5 +1,9 @@
 # CVDL: CV Description Language
 
+![](https://badgen.net/static/license/MIT/blue)
+![](https://badgen.net/github/stars/alpaylan/cvdl)
+
+
 CVDL is a language for creating CVs and resumes. This repository contains a compiler, as well as some informal specifications of the language design.
 
 ## Introduction
