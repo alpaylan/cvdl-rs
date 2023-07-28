@@ -1,0 +1,59 @@
+[
+    {
+        "section-name": "Work-Experience",
+        "data-schema": "Work-Experience",
+        "layout-schema": "Work-Experience",
+        "data": {
+            "Title": "Work Experience"
+        },
+        "items": [
+            {
+                "Company": "University of Maryland - PLUM",
+                "Position": "Graduate Research Assistant",
+                "Date-Started": "Aug 2022",
+                "Date-Finished": "Present",
+                "Text": "Working with Leonidas Lampropoulos on the intersection of Property Based Testing, Fuzzing, and Formal Verification."
+            },
+            {
+                "Company": "Amazon Web Services Privacy Engineering Team - Automated Reasoning",
+                "Position": "Applied Science Intern",
+                "Date-Started": "May 2023",
+                "Date-Finished": "Aug 2023",
+                "Text": "Developed a dataflow analysis method for a state machine based DSL.",
+                "Skills": ["Python", "Java", "Dataflow Analysis", "Symbolic Execution"]
+            },
+            {
+                "Company": "Amazon Web Services Privacy Engineering Team - Automated Reasoning",
+                "Position": "Applied Science Intern",
+                "Date-Started": "May 2022",
+                "Date-Finished": "Aug 2022",
+                "Text": "Implemented of a novel encryption scheme on top of the AWS Encryption SDK.",
+                "Skills": ["Python", "Dafny", "AWS Encryption SDK"]
+            },
+            {
+                "Company": "University of Maryland - Maryland Cybersecurity Center(MC2)",
+                "Position": "Research Intern",
+                "Date-Started": "Jul 2020",
+                "Date-Finished": "Dec 2020",
+                "Skills": ["Program Synthesis", "Automatic Exploit Generation"]
+            },
+            {
+                "Company": "Havelsan",
+                "Position": "Part-Time Engineer",
+                "Date-Started": "Jul 2020",
+                "Date-Finished": "Apr 2020",
+                "Text": "Designed and implemented a novel bandwidth detection and optimization algorithm for a video-conference application.",
+                "Skills": ["Javascript", "React"]
+            },
+            {
+                "Company": "Emproof",
+                "Position": "Embedded Security Engineering Intern",
+                "Date-Started": "Jun 2019",
+                "Date-Finished": "Sep 2019",
+                "Text": "Worked on translation validation of binary obfuscation techniques.",
+                "Skills": ["C++", "Z3 SMT Solver", "ARM Assembly", "Symbolic Execution"]
+            }
+        ]
+    }
+    
+]

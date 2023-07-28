@@ -1,0 +1,32 @@
+  01234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789
+0 Work Experience                                                                                                                                                                                         
+  01234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789
+0 University of Maryland - PLUM                                                                                                                                                             Aug 2022 - Pre
+1 Graduate Research Assistant                                                                                                                                                                             
+2 Working with Leonidas Lampropoulos on the intersection of Property Based Testing, Fuzzing, and Formal Verification.                                                                                     
+3 Skills                                                                                                                                                                                                  
+  01234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789
+0 Amazon Web Services Privacy Engineering Team - Automated Reasoning                                                                                                                       May 2023 - Aug 
+1 Applied Science Intern                                                                                                                                                                                  
+2 Developed a dataflow analysis method for a state machine based DSL.                                                                                                                                     
+3 Python, Java, Dataflow Analysis, Symbolic Execution                                                                                                                                                     
+  01234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789
+0 Amazon Web Services Privacy Engineering Team - Automated Reasoning                                                                                                                       May 2022 - Aug 
+1 Applied Science Intern                                                                                                                                                                                  
+2 Implemented of a novel encryption scheme on top of the AWS Encryption SDK.                                                                                                                              
+3 Python, Dafny, AWS Encryption SDK                                                                                                                                                                       
+  01234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789
+0 University of Maryland - Maryland Cybersecurity Center(MC2)                                                                                                                              Jul 2020 - Dec 
+1 Research Intern                                                                                                                                                                                         
+2 Text                                                                                                                                                                                                    
+3 Program Synthesis, Automatic Exploit Generation                                                                                                                                                         
+  01234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789
+0 Havelsan                                                                                                                                                                                 Jul 2020 - Apr 
+1 Part-Time Engineer                                                                                                                                                                                      
+2 Designed and implemented a novel bandwidth detection and optimization algorithm for a video-conference application.                                                                                     
+3 Javascript, React                                                                                                                                                                                       
+  01234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789
+0 Emproof                                                                                                                                                                                  Jun 2019 - Sep 
+1 Embedded Security Engineering Intern                                                                                                                                                                    
+2 Worked on translation validation of binary obfuscation techniques.                                                                                                                                      
+3 C++, Z3 SMT Solver, ARM Assembly, Symbolic Execution                                                                                                                                                    
