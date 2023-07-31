@@ -1,8 +1,11 @@
-use std::{path::Path, io::ErrorKind};
+use std::{io::ErrorKind, path::Path};
 
 use serde::{Deserialize, Serialize};
 
-use crate::{data_schema::DataSchema, resume_data::{ResumeData, ItemContent}};
+use crate::{
+    data_schema::DataSchema,
+    resume_data::{ItemContent, ResumeData},
+};
 
 use std::fs;
 use std::io::Error;

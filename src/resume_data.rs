@@ -112,7 +112,10 @@ mod tests {
         assert_eq!(resume_data.sections[0].name, "Profile");
         assert_eq!(resume_data.sections[0].data_schema, "Profile");
         assert_eq!(resume_data.sections[0].items.len(), 1);
-        assert_eq!(resume_data.sections[0].items[0]["Name"].to_string(), "Alperen");
+        assert_eq!(
+            resume_data.sections[0].items[0]["Name"].to_string(),
+            "Alperen"
+        );
         assert_eq!(resume_data.sections[1].name, "Education");
         assert_eq!(resume_data.sections[1].data_schema, "Education");
         assert_eq!(resume_data.sections[1].items.len(), 2);

@@ -1,15 +1,15 @@
-mod data_schema;
-mod resume_data;
-mod text_layout_schema;
 mod ascii_layout_schema;
+mod data_schema;
 mod point;
+mod resume_data;
 mod spatial_box;
+mod text_layout_schema;
 
-use ascii_layout_schema::{Layout, LayoutGrid, GridElement, Element, Font, Alignment, Margin};
+use ascii_layout_schema::{Alignment, Element, Layout, Margin};
 
 use std::{fs, path::Path};
 
-use crate::ascii_layout_schema::LayoutSchema;
+use crate::ascii_layout_schema::{Container, ContainerInner, LayoutSchema, Stack, Width};
 
 fn main() {
     let schema = fs::read_to_string("data/data-schemas.json").unwrap();
@@ -18,64 +18,39 @@ fn main() {
     let resume = fs::read_to_string("data/resume2.json").unwrap();
     let resume_data = resume_data::ResumeData::from_json(&resume);
 
-    // let text_layout = fs::read_to_string("data/text-layout-schemas.json").unwrap();
-    // let text_layout_schemas = text_layout_schema::TextLayoutSchema::from_json(&text_layout);
-
-    // let output = text_layout_schema::TextLayoutSchema::render(text_layout_schemas, resume_data, data_schemas,  Path::new("output.md"));
-    
-    // println!("{:?}", output);
-
-
-    let header_layout = Layout::Stack(vec![
-        Layout::Element(Element {
-            text: String::from("Title"),
-            font: Font {
-                name: String::from("Arial"),
-                size: 12,
-            },
-            alignment: Alignment::Left,
-        }),
-    ]);
-
-    // "Company": "Emproof",
-    // "Position": "Embedded Security Engineering Intern",
-    // "Date-Started": "Jun 2019",
-    // "Date-Finished": "Sep 2019",
-    // "Text": "Worked on translation validation of binary obfuscation techniques.",
-    // "Skills": ["C++", "Z3 SMT Solver", "ARM Assembly", "Symbolic Execution"]
-
-    let layout = Layout::Stack(vec![
-        Layout::just_grid(vec![
-            Layout::elem("Company"),
-            Layout::just_grid(vec![
-                Layout::elem("Date-Started"),
-                Layout::elem("-"),
-                Layout::elem("Date-Finished"),
-            ])
-        ]),
-        Layout::just_grid(vec![
-            Layout::elem("Position")
-        ]),
-        Layout::just_grid(vec![
-            Layout::elem("Text")
-        ]),
-        Layout::just_grid(vec![
-            Layout::elem("Skills")
-        ])
-    ]);
-
-    let layout_schema = LayoutSchema {
+    let layout_schemas = vec![LayoutSchema {
         schema_name: "Work-Experience".to_string(),
-        header_layout_schema: header_layout,
-        item_layout_schema: layout,
-    };
+        header_layout_schema: Layout::Container(Container {
+            inner: ContainerInner::Element(Element::Ref("Title".to_string())),
+            width: Width::Fixed(100),
+            alignment: Alignment::Left,
+            margin: Margin::new(0, 0, 0, 0),
+        }),
+        item_layout_schema: Layout::mk_stack(vec![
+            Layout::mk_row(vec![
+                Layout::mk_ref("Company".to_string()).with_width(70),
+                Layout::mk_row(vec![
+                    Layout::mk_ref("Date-Started".to_string()),
+                    Layout::mk_text("-".to_string()).with_margin(Margin::new(0, 0, 1, 1)),
+                    Layout::mk_ref("Date-Finished".to_string()),
+                ])
+                .with_width(30)
+                .with_alignment(Alignment::Right),
+            ]),
+            Layout::mk_ref("Position".to_string()).with_width(70),
+            Layout::mk_ref("Text".to_string()).with_width(70),
+            Layout::mk_ref("Skills".to_string()).with_width(70),
+        ])
+        .with_width(100)
+        .with_alignment(Alignment::Left)
+        .with_margin(Margin::new(1, 0, 0, 0)),
+    }];
 
-    print!("{:?}", Layout::render(
-        vec![layout_schema],
+    LayoutSchema::render(
+        layout_schemas,
         resume_data,
         data_schemas,
-        Path::new("output.txt")
-    ));
-
+        Path::new("output.txt"),
+    )
+    .unwrap();
 }
-

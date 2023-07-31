@@ -1,3 +1,5 @@
+use core::num;
+use std::borrow::BorrowMut;
 use std::collections::HashMap;
 
 use serde::{Deserialize, Serialize};
@@ -22,80 +24,7 @@ pub struct LayoutSchema {
     pub item_layout_schema: Layout,
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone)]
-pub enum Layout {
-    Stack(Vec<Layout>),
-    Grid(LayoutGrid),
-    Element(Element),
-}
-
-impl Layout {
-    pub fn diagnostic(&self) -> String {
-        match self {
-            Layout::Stack(_) => String::from("Stack"),
-            Layout::Grid(_) => String::from("Grid"),
-            Layout::Element(_) => String::from("Element"),
-        }
-    }
-
-    pub fn just_grid(grid_elements: Vec<Layout>) -> Layout {
-        Layout::Grid(LayoutGrid {
-            elements: grid_elements
-                .iter()
-                .map(|elem| GridElement::default(elem.clone()))
-                .collect(),
-            alignment: Alignment::Justified,
-        })
-    }
-
-    pub fn elem(text: &str) -> Layout {
-        Layout::Element(Element {
-            text: text.to_string(),
-            font: Font {
-                name: String::from("Arial"),
-                size: 12,
-            },
-            alignment: Alignment::Left,
-        })
-    }
-}
-
-impl Layout {
-    pub fn instantiate(
-        &self,
-        section: &HashMap<String, ItemContent>,
-        schema: &Vec<Field>,
-    ) -> Layout {
-        match self {
-            Layout::Stack(stacks) => {
-                let mut instantiated_stacks = Vec::new();
-                for stack in stacks {
-                    instantiated_stacks.push(stack.instantiate(section, schema));
-                }
-                Layout::Stack(instantiated_stacks)
-            }
-            Layout::Grid(grid) => {
-                let mut instantiated_elements = Vec::new();
-                for element in &grid.elements {
-                    let instantiated_element = element.instantiate(section, schema);
-                    instantiated_elements.push(instantiated_element);
-                }
-                Layout::Grid(LayoutGrid {
-                    elements: instantiated_elements,
-                    alignment: grid.alignment.clone(),
-                })
-            }
-            Layout::Element(elem) => Layout::Element(Element {
-                text: section
-                    .get(&elem.text)
-                    .unwrap_or(&ItemContent::String(elem.text.clone()))
-                    .to_string(),
-                font: elem.font.clone(),
-                alignment: elem.alignment.clone(),
-            }),
-        }
-    }
-
+impl LayoutSchema {
     pub fn render(
         layout_schemas: Vec<LayoutSchema>,
         resume_data: ResumeData,
@@ -119,13 +48,12 @@ impl Layout {
                 .find(|&s| s.name == section.data_schema)
                 .unwrap();
             // 3. Render the header
-
-            let instantiated_header = layout_schema
-                .header_layout_schema
-                .instantiate(&section.data, &data_schema.header_schema);
-            let header = instantiated_header.blueprint();
-
-            contents.push_str(&header);
+            contents.push_str(
+                &layout_schema
+                    .header_layout_schema
+                    .instantiate(&section.data, &data_schema.header_schema)
+                    .render(),
+            );
 
             // Render Section Items
             for item in section.items {
@@ -140,12 +68,12 @@ impl Layout {
                     .find(|&s| s.name == section.data_schema)
                     .unwrap();
                 // 3. Render the item
-
-                let instantiated_item = layout_schema
-                    .item_layout_schema
-                    .instantiate(&item, &data_schema.item_schema);
-                let item = instantiated_item.blueprint();
-                contents.push_str(&item);
+                contents.push_str(
+                    &layout_schema
+                        .item_layout_schema
+                        .instantiate(&item, &data_schema.item_schema)
+                        .render(),
+                );
             }
         }
 
@@ -153,286 +81,506 @@ impl Layout {
     }
 }
 
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub enum Layout {
+    Stack(Stack),
+    Container(Container),
+}
+
 impl Layout {
-    fn compute_height(&self) -> u32 {
-        match self {
-            Layout::Stack(stacks) => stacks.iter().map(|e| e.compute_height()).sum::<u32>(),
-            Layout::Grid(grid) => {
-                grid.elements
-                    .iter()
-                    .map(|e| e.margin.top + e.margin.bottom + e.element.compute_height())
-                    .max()
-                    .unwrap_or_default()
-            }
-            Layout::Element(_) => 1,
-        }
-    }
-
-    fn compute_total_elements_width(&self) -> u32 {
-        match self {
-            Layout::Stack(stacks) => {
-                stacks
-                    .iter()
-                    .map(|e| e.compute_total_elements_width())
-                    .max()
-                    .unwrap()
-
-            }
-            Layout::Grid(grid) => {
-                grid.elements
-                    .iter()
-                    .map(|e| {
-                        e.margin.left + e.margin.right + e.element.compute_total_elements_width()
-                    })
-                    .sum::<u32>()
-
-            }
-            Layout::Element(elem) => elem.text.len() as u32,
-        }
-    }
-
-    pub fn blueprint(&self) -> String {
-        let mut blueprintmap: HashMap<Point, String> = HashMap::new();
-        let height = self.compute_height();
-        let width = 100;
-
-        self.compute_blueprint(
-            &mut blueprintmap,
-            SpatialBox::new(Point::new(0, 0), Point::new(width - 1, height - 1)),
-        );
-        let mut blueprintstring = String::new();
-
-        blueprintstring.push(' ');
-        blueprintstring.push(' ');
-        for j in 0..width {
-            blueprintstring.push(j.to_string().chars().last().unwrap());
-        }
-        blueprintstring.push('\n');
-        for i in 0..height {
-            blueprintstring.push(i.to_string().chars().last().unwrap());
-            blueprintstring.push(' ');
-            for j in 0..width {
-                if let Some(c) = blueprintmap.get(&Point::new(j, i)) {
-                    blueprintstring.push(c.chars().next().unwrap());
-                } else {
-                    blueprintstring.push(' ')
-                }
-            }
-            blueprintstring.push('\n');
-        }
-
-        blueprintstring
-    }
-
-    fn draw_outer_box(
-        &self,
-        blueprintmap: &mut HashMap<Point, String>,
-        current_box: SpatialBox,
-    ) -> SpatialBox {
-        let marker = match self {
-            Layout::Stack(_) => "+",
-            Layout::Grid(_) => "*",
-            Layout::Element(_) => "-",
-        };
-
-        for point in current_box.frame_points() {
-            blueprintmap.insert(point, marker.to_string());
-        }
-
-        current_box.inner_box()
-    }
-
-    fn compute_blueprint(
-        &self,
-        mut blueprintmap: &mut HashMap<Point, String>,
-        mut current_box: SpatialBox,
-    ) {
-
-        match self {
-            Layout::Stack(layouts) => {
-                for layout in layouts {
-                    let height = layout.compute_height();
-                    let new_box = SpatialBox::new(
-                        current_box.top_left,
-                        Point::new(
-                            current_box.bottom_right.x,
-                            current_box.top_left.y + height - 1,
-                        ),
-                    );
-                    layout.compute_blueprint(&mut blueprintmap, new_box);
-                    current_box.top_left.y += height;
-                }
-            }
-            Layout::Grid(grid) => {
-                let elements_width: u32 = self.compute_total_elements_width() - 2;
-
-                match grid.alignment {
-                    Alignment::Left => {
-                        // todo: Bounds check
-                        // Explanation: When you too large margins, elements
-                        // go out of the picture. There should be a bounce check.
-                        for element in &grid.elements {
-                            let height = element.element.compute_height();
-                            let width = element.element.compute_total_elements_width();
-
-                            let new_box = SpatialBox::new(
-                                current_box.top_left,
-                                current_box
-                                    .top_left
-                                    .move_x_by((width - 1) as i32)
-                                    .move_y_by((height - 1) as i32),
-                            )
-                            .move_x_by(element.margin.left as i32)
-                            .move_y_by(element.margin.top as i32);
-
-                            element
-                                .element
-                                .compute_blueprint(&mut blueprintmap, new_box);
-                            current_box.top_left = current_box.top_left.move_x_by(
-                                (width + element.margin.right + element.margin.left) as i32,
-                            );
-                        }
-                    }
-                    Alignment::Center => {
-                        let total_width = current_box.width();
-                        let left_spacing: u32 = (total_width - elements_width) / 2;
-                        let mut current_box = SpatialBox::new(
-                            current_box.top_left.move_x_by(left_spacing as i32),
-                            current_box.bottom_right,
-                        );
-                        for element in &grid.elements {
-                            let height = element.element.compute_height();
-                            let width = element.element.compute_total_elements_width();
-                            let new_box = SpatialBox::new(
-                                current_box.top_left,
-                                current_box
-                                    .top_left
-                                    .move_x_by((width - 1) as i32)
-                                    .move_y_by((height - 1) as i32),
-                            )
-                            .move_x_by(element.margin.left as i32)
-                            .move_y_by(element.margin.top as i32);
-                            element
-                                .element
-                                .compute_blueprint(&mut blueprintmap, new_box);
-                            current_box.top_left = current_box.top_left.move_x_by(
-                                (width + element.margin.right + element.margin.left) as i32,
-                            )
-                        }
-                    }
-                    Alignment::Right => {
-                        let left_spacing: u32 = current_box.width() - elements_width;
-
-                        let mut current_box = SpatialBox::new(
-                            current_box.top_left.move_x_by(left_spacing as i32),
-                            current_box.bottom_right,
-                        );
-                        for element in &grid.elements {
-                            let height = element.element.compute_height();
-                            let width = element.element.compute_total_elements_width();
-                            let new_box = SpatialBox::new(
-                                current_box.top_left,
-                                current_box
-                                    .top_left
-                                    .move_x_by((width - 1) as i32)
-                                    .move_y_by((height - 1) as i32),
-                            )
-                            .move_x_by(element.margin.left as i32)
-                            .move_y_by(element.margin.top as i32);
-                            element
-                                .element
-                                .compute_blueprint(&mut blueprintmap, new_box);
-                            current_box.top_left = current_box.top_left.move_x_by(
-                                (width + element.margin.right + element.margin.left) as i32,
-                            );
-                        }
-                    }
-                    Alignment::Justified => {
-                        let total_spacing: u32 = current_box.width() - elements_width;
-                        let per_element_spacing = if (grid.elements.len() > 1) {
-                            total_spacing / (grid.elements.len() - 1) as u32
-                        } else {
-                            0
-                        };
-                        for element in &grid.elements {
-                            let height = element.element.compute_height();
-                            let width = element.element.compute_total_elements_width();
-                            let new_box = SpatialBox::new(
-                                current_box.top_left,
-                                current_box
-                                    .top_left
-                                    .move_x_by((width - 1) as i32)
-                                    .move_y_by((height - 1) as i32),
-                            )
-                            .move_x_by(element.margin.left as i32)
-                            .move_y_by(element.margin.top as i32);
-
-                            element
-                                .element
-                                .compute_blueprint(&mut blueprintmap, new_box);
-                            current_box.top_left = current_box.top_left.move_x_by(
-                                (width
-                                    + per_element_spacing
-                                    + element.margin.right
-                                    + element.margin.left) as i32,
-                            );
-                        }
-                    }
-                }
-            }
-            Layout::Element(elem) => {
-                for (i, c) in elem.text.chars().enumerate() {
-                    blueprintmap.insert(current_box.top_left.move_x_by(i as i32), c.to_string());
-                }
-            }
-        }
-    }
-}
-
-#[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct LayoutGrid {
-    pub elements: Vec<GridElement>,
-    pub alignment: Alignment,
-}
-
-#[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct GridElement {
-    pub min_width: Option<u32>,
-    pub max_width: Option<u32>,
-    pub default_width: Option<u32>,
-    pub margin: Margin,
-    pub element: Layout,
-}
-
-impl GridElement {
-    pub fn default(element: Layout) -> GridElement {
-        GridElement {
-            min_width: None,
-            max_width: Some(100),
-            default_width: Some(70),
+    pub fn mk_row(layouts: Vec<Layout>) -> Layout {
+        Layout::Container(Container {
+            width: Width::Fixed(layouts.iter().map(|l| l.get_width()).sum()),
+            inner: ContainerInner::Grid(layouts),
+            alignment: Alignment::default(),
             margin: Margin::default(),
-            element,
+        })
+    }
+
+    pub fn mk_stack(layouts: Vec<Layout>) -> Layout {
+        Layout::Stack(Stack {
+            layouts: layouts
+                .iter()
+                .map(|layout| Container {
+                    width: Width::Fixed(layout.get_width()),
+                    inner: ContainerInner::Grid(vec![layout.clone()]),
+                    alignment: Alignment::default(),
+                    margin: Margin::default(),
+                })
+                .collect(),
+        })
+    }
+
+    pub fn mk_text(text: String) -> Layout {
+        Layout::Container(Container::text_container(text))
+    }
+
+    pub fn mk_ref(text: String) -> Layout {
+        Layout::Container(Container::ref_container(text))
+    }
+    
+    pub fn wrap_in_container(&self) -> Layout {
+        Layout::Container(Container {
+            width: Width::Fill,
+            inner: ContainerInner::Grid(vec![self.clone()]),
+            alignment: Alignment::default(),
+            margin: Margin::default(),
+        })
+    }
+
+    pub fn with_width(&self, width: u32) -> Layout {
+        match self {
+            Layout::Stack(stack) => self.wrap_in_container().with_width(width),
+            Layout::Container(container) => Layout::Container(Container {
+                width: Width::Fixed(width),
+                inner: container.inner.clone(),
+                alignment: container.alignment,
+                margin: container.margin,
+            }),
+        }
+    }
+
+
+    pub fn with_margin(&self, margin: Margin) -> Layout {
+        match self {
+            Layout::Stack(stack) => self.wrap_in_container().with_margin(margin),
+            Layout::Container(container) => Layout::Container(Container {
+                width: Width::Fixed(container.get_width() + margin.left + margin.right),
+                inner: container.inner.clone(),
+                alignment: container.alignment,
+                margin: margin,
+            }),
+        }
+    }
+
+    pub fn with_alignment(&self, alignment: Alignment) -> Layout {
+        match self {
+            Layout::Stack(stack) => self.wrap_in_container().with_alignment(alignment),
+            Layout::Container(container) => Layout::Container(Container {
+                width: container.width,
+                inner: container.inner.clone(),
+                alignment: alignment,
+                margin: container.margin,
+            }),
         }
     }
 }
 
-impl GridElement {
+#[derive(Serialize, Deserialize, Debug, Clone, Copy)]
+pub enum Width {
+    Fixed(u32),
+    Fill,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct Container {
+    pub inner: ContainerInner,
+    pub width: Width,
+    pub alignment: Alignment,
+    pub margin: Margin,
+}
+
+impl Container {
+    pub fn get_width(&self) -> u32 {
+        match self.width {
+            Width::Fixed(w) => w,
+            Width::Fill => self.inner.get_width(),
+        }
+    }
+
+    pub fn text_container(text: String) -> Container {
+        Container {
+            width: Width::Fixed(text.len() as u32),
+            inner: ContainerInner::Element(Element::Text(text)),
+            alignment: Alignment::Left,
+            margin: Margin::default(),
+        }
+    }
+
+    pub fn text_container_with_margin(text: String, margin: Margin) -> Container {
+        Container {
+            width: Width::Fixed(text.len() as u32 + margin.left + margin.right),
+            inner: ContainerInner::Element(Element::Text(text)),
+            alignment: Alignment::Left,
+            margin: margin,
+        }
+    }
+
+    pub fn ref_container(text: String) -> Container {
+        Container {
+            inner: ContainerInner::Element(Element::Ref(text)),
+            width: Width::Fill,
+            alignment: Alignment::Left,
+            margin: Margin::default(),
+        }
+    }
+
+    pub fn ref_container_with_margin(text: String, margin: Margin) -> Container {
+        Container {
+            inner: ContainerInner::Element(Element::Ref(text)),
+            width: Width::Fill,
+            alignment: Alignment::Left,
+            margin: margin,
+        }
+    }
+}
+
+impl Container {
     pub fn instantiate(
         &self,
         section: &HashMap<String, ItemContent>,
         schema: &Vec<Field>,
-    ) -> GridElement {
-        GridElement {
-            min_width: self.min_width,
-            max_width: self.max_width,
-            default_width: self.default_width,
-            margin: self.margin.clone(),
-            element: self.element.instantiate(section, schema),
+    ) -> Container {
+        match &self.inner {
+            ContainerInner::Grid(layouts) => Container {
+                inner: ContainerInner::Grid(
+                    layouts
+                        .iter()
+                        .map(|l| l.instantiate(section, schema))
+                        .collect::<Vec<Layout>>(),
+                ),
+                width: self.width,
+                alignment: self.alignment,
+                margin: self.margin,
+            },
+            ContainerInner::Element(Element::Text(text)) => Container {
+                inner: ContainerInner::Element(Element::Text(text.clone())),
+                width: self.width,
+                alignment: self.alignment,
+                margin: self.margin,
+            },
+            ContainerInner::Element(Element::Ref(name)) => {
+                if let Some(text) = section.get(name) {
+                    Container {
+                        inner: ContainerInner::Element(Element::Text(text.to_string())),
+                        width: self.width,
+                        alignment: self.alignment,
+                        margin: self.margin,
+                    }
+                } else {
+                    Container {
+                        inner: ContainerInner::Grid(vec![]),
+                        width: Width::Fixed(0),
+                        alignment: self.alignment,
+                        margin: Margin::default(),
+                    }
+                }
+            }
         }
     }
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
+pub enum ContainerInner {
+    Grid(Vec<Layout>),
+    Element(Element),
+}
+
+impl ContainerInner {
+    pub fn get_width(&self) -> u32 {
+        match self {
+            ContainerInner::Grid(layouts) => layouts.iter().map(|l| l.get_width()).sum(),
+            ContainerInner::Element(e) => e.text().len() as u32,
+        }
+    }
+}
+
+impl Layout {
+    pub fn text_container(text: String, width: Width) -> Layout {
+        Layout::Container(Container {
+            inner: ContainerInner::Element(Element::Text(text)),
+            width: width,
+            alignment: Alignment::Left,
+            margin: Margin::default(),
+        })
+    }
+
+    pub fn text_container_with_margin(text: String, width: Width, margin: Margin) -> Layout {
+        Layout::Container(Container {
+            inner: ContainerInner::Element(Element::Text(text)),
+            width: width,
+            alignment: Alignment::Left,
+            margin: margin,
+        })
+    }
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct Stack {
+    pub layouts: Vec<Container>,
+}
+
+impl Stack {
+    pub fn get_width(&self) -> u32 {
+        self.layouts.iter().map(|c| c.get_width()).max().unwrap()
+    }
+}
+
+impl Layout {
+    pub fn instantiate(
+        &self,
+        section: &HashMap<String, ItemContent>,
+        schema: &Vec<Field>,
+    ) -> Layout {
+        match self {
+            Layout::Stack(s) => Layout::Stack(Stack {
+                layouts: s
+                    .layouts
+                    .iter()
+                    .map(|c| c.instantiate(section, schema))
+                    .collect(),
+            }),
+            Layout::Container(c) => Layout::Container(c.instantiate(section, schema)),
+        }
+    }
+}
+
+impl Layout {
+    fn get_width(&self) -> u32 {
+        match self {
+            Layout::Container(c) => c.get_width(),
+            Layout::Stack(s) => s.get_width(),
+        }
+    }
+
+    pub fn render(&self) -> String {
+        let mut layout_map: HashMap<Point, char> = HashMap::new();
+        let top_left: Point = Point::new(0, 0);
+        let width = self.get_width();
+
+        self.compute_layout_map(&mut layout_map, top_left, width);
+
+        let height = layout_map.keys().map(|p| p.y).max().unwrap_or(0) + 1;
+
+        let mut output = String::new();
+
+        // output.push(' ');
+        // for x in 0..width {
+        //     output.push((x % 10).to_string().chars().next().unwrap());
+        // }
+        // output.push('\n');
+        for y in 0..height {
+            // output.push((y % 10).to_string().chars().next().unwrap());
+            for x in 0..width {
+                let point = Point::new(x, y);
+                let c = layout_map.get(&point).unwrap_or(&' ');
+                output.push(*c);
+            }
+            output.push('\n');
+        }
+
+        output
+    }
+
+    fn compute_layout_map(
+        &self,
+        mut blueprintmap: &mut HashMap<Point, char>,
+        top_left: Point,
+        width: u32,
+    ) -> u32 {
+        match self {
+            Layout::Stack(stack) => {
+                let mut top_left = top_left;
+                let mut depth = top_left.y;
+                for element in stack.layouts.iter() {
+                    depth = Layout::Container(element.clone()).compute_layout_map(
+                        &mut blueprintmap,
+                        top_left,
+                        width,
+                    );
+
+                    top_left = top_left.move_y_to(depth);
+                }
+                depth
+            }
+            Layout::Container(container) => {
+                if container.get_width() == 0 {
+                    return top_left.y;
+                }
+                if container.get_width() <= container.margin.left + container.margin.right {
+                    panic!("Container width is too small or margins are too large");
+                }
+
+                let container_width =
+                    container.get_width() - container.margin.left - container.margin.right;
+
+                if container_width < (&container.inner).get_width() {
+                    match &container.inner {
+                        ContainerInner::Grid(layouts) => {
+                            todo!()
+                        }
+                        ContainerInner::Element(element) => {
+                            let total_length = element.text().len() as u32;
+
+                            let number_of_lines =
+                                (total_length as f32 / container_width as f32).ceil() as u32;
+
+                            let mut layouts = Vec::new();
+
+                            for i in 0..number_of_lines {
+                                let start = i * container_width;
+                                let text = element
+                                    .text()
+                                    .chars()
+                                    .skip(start as usize)
+                                    .take(container_width as usize)
+                                    .collect::<String>();
+
+                                let mut text_container = Container {
+                                    inner: ContainerInner::Element(Element::Text(text)),
+                                    width: Width::Fixed(container_width),
+                                    alignment: container.alignment.clone(),
+                                    margin: container.margin.clone(),
+                                };
+
+                                text_container.margin = if i == 0 {
+                                    Margin::new(
+                                        container.margin.top,
+                                        0,
+                                        container.margin.left,
+                                        container.margin.right,
+                                    )
+                                } else if i == number_of_lines - 1 {
+                                    Margin::new(
+                                        0,
+                                        container.margin.bottom,
+                                        container.margin.left,
+                                        container.margin.right,
+                                    )
+                                } else {
+                                    Margin::new(0, 0, container.margin.left, container.margin.right)
+                                };
+                                layouts.push(text_container);
+                            }
+
+                            Layout::Stack(Stack { layouts }).compute_layout_map(
+                                &mut blueprintmap,
+                                top_left,
+                                width,
+                            )
+                        }
+                    }
+                } else {
+                    let space = container_width - (&container.inner).get_width();
+                    match container.alignment {
+                        Alignment::Left => {
+                            let top_left = top_left
+                                .move_x_by(container.margin.left as i32)
+                                .move_y_by(container.margin.top as i32);
+
+                            match &container.inner {
+                                ContainerInner::Grid(ref layouts) => {
+                                    let mut top_left = top_left;
+                                    let mut max_depth = top_left.y;
+                                    for element in layouts.iter() {
+                                        let depth = element.compute_layout_map(
+                                            &mut blueprintmap,
+                                            top_left,
+                                            element.get_width(),
+                                        );
+                                        max_depth = u32::max(max_depth, depth);
+                                        top_left = top_left.move_x_by(element.get_width() as i32);
+                                    }
+
+                                    max_depth
+                                }
+                                ContainerInner::Element(element) => {
+                                    let top_right = top_left.move_x_by(container_width as i32);
+
+                                    for x in top_left.x..top_right.x {
+                                        if let Some(c) =
+                                            element.text().chars().nth((x - top_left.x) as usize)
+                                        {
+                                            blueprintmap.insert(Point::new(x, top_left.y), c);
+                                        }
+                                    }
+
+                                    top_right.y + container.margin.bottom + 1
+                                }
+                            }
+                        }
+                        Alignment::Center => {
+                            let top_left = top_left
+                                .move_x_by((space / 2 + container.margin.left) as i32)
+                                .move_y_by(container.margin.top as i32);
+
+                            match &container.inner {
+                                ContainerInner::Grid(ref layouts) => {
+                                    let mut top_left = top_left;
+                                    let mut max_depth = top_left.y;
+                                    for element in layouts.iter() {
+                                        let depth = element.compute_layout_map(
+                                            &mut blueprintmap,
+                                            top_left,
+                                            element.get_width(),
+                                        );
+                                        max_depth = u32::max(max_depth, depth);
+                                        top_left = top_left.move_x_by(element.get_width() as i32);
+                                    }
+
+                                    max_depth
+                                }
+                                ContainerInner::Element(element) => {
+                                    let top_right = top_left.move_x_by(container_width as i32);
+
+                                    for x in top_left.x..top_right.x {
+                                        if let Some(c) =
+                                            element.text().chars().nth((x - top_left.x) as usize)
+                                        {
+                                            blueprintmap.insert(Point::new(x, top_left.y), c);
+                                        }
+                                    }
+
+                                    top_right.y + container.margin.bottom + 1
+                                }
+                            }
+                        }
+
+                        Alignment::Right => {
+                            let top_left = top_left
+                                .move_x_by((space + container.margin.left) as i32)
+                                .move_y_by(container.margin.top as i32);
+
+                            match &container.inner {
+                                ContainerInner::Grid(ref layouts) => {
+                                    let mut top_left = top_left;
+                                    let mut max_depth = top_left.y;
+                                    for element in layouts.iter() {
+                                        let depth = element.compute_layout_map(
+                                            &mut blueprintmap,
+                                            top_left,
+                                            element.get_width(),
+                                        );
+                                        max_depth = u32::max(max_depth, depth);
+                                        top_left = top_left.move_x_by(element.get_width() as i32);
+                                    }
+
+                                    max_depth
+                                }
+                                ContainerInner::Element(element) => {
+                                    let top_right = top_left.move_x_by(container_width as i32);
+
+                                    for x in top_left.x..top_right.x {
+                                        if let Some(c) =
+                                            element.text().chars().nth((x - top_left.x) as usize)
+                                        {
+                                            blueprintmap.insert(Point::new(x, top_left.y), c);
+                                        }
+                                    }
+
+                                    top_right.y + container.margin.bottom + 1
+                                }
+                            }
+                        }
+                        Alignment::Justified => todo!(),
+                    }
+                }
+            }
+        }
+    }
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone, Copy)]
 pub struct Margin {
     pub top: u32,
     pub bottom: u32,
@@ -451,7 +599,18 @@ impl Default for Margin {
     }
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone)]
+impl Margin {
+    pub fn new(top: u32, bottom: u32, left: u32, right: u32) -> Margin {
+        Margin {
+            top,
+            bottom,
+            left,
+            right,
+        }
+    }
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone, Copy)]
 pub enum Alignment {
     Left,
     Center,
@@ -466,16 +625,17 @@ impl Default for Alignment {
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct Element {
-    pub text: String,
-    pub font: Font,
-    pub alignment: Alignment,
+pub enum Element {
+    Ref(String),
+    Text(String),
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct Font {
-    pub name: String,
-    pub size: u32,
+impl Element {
+    pub fn text(&self) -> String {
+        match self {
+            Element::Ref(s) | Element::Text(s) => s.clone(),
+        }
+    }
 }
 
 #[cfg(test)]
@@ -483,180 +643,5 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_compute_blueprint() {
-        let layout = Layout::Stack(vec![
-            Layout::Grid(LayoutGrid {
-                elements: vec![
-                    GridElement {
-                        min_width: None,
-                        max_width: None,
-                        default_width: None,
-                        margin: Margin {
-                            top: 3,
-                            bottom: 0,
-                            left: 20,
-                            right: 0,
-                        },
-                        element: Layout::Element(Element {
-                            text: String::from("A"),
-                            font: Font {
-                                name: String::from("Arial"),
-                                size: 12,
-                            },
-                            alignment: Alignment::Left,
-                        }),
-                    },
-                    GridElement {
-                        min_width: None,
-                        max_width: None,
-                        default_width: None,
-                        margin: Margin {
-                            top: 0,
-                            bottom: 2,
-                            left: 0,
-                            right: 20,
-                        },
-                        element: Layout::Element(Element {
-                            text: String::from("B"),
-                            font: Font {
-                                name: String::from("Arial"),
-                                size: 12,
-                            },
-                            alignment: Alignment::Left,
-                        }),
-                    },
-                ],
-                alignment: Alignment::Justified,
-            }),
-            Layout::Grid(LayoutGrid {
-                elements: vec![
-                    GridElement {
-                        min_width: None,
-                        max_width: None,
-                        default_width: None,
-                        margin: Margin {
-                            top: 3,
-                            bottom: 0,
-                            left: 20,
-                            right: 0,
-                        },
-                        element: Layout::Element(Element {
-                            text: String::from("A"),
-                            font: Font {
-                                name: String::from("Arial"),
-                                size: 12,
-                            },
-                            alignment: Alignment::Left,
-                        }),
-                    },
-                    GridElement {
-                        min_width: None,
-                        max_width: None,
-                        default_width: None,
-                        margin: Margin {
-                            top: 0,
-                            bottom: 2,
-                            left: 0,
-                            right: 20,
-                        },
-                        element: Layout::Element(Element {
-                            text: String::from("B"),
-                            font: Font {
-                                name: String::from("Arial"),
-                                size: 12,
-                            },
-                            alignment: Alignment::Left,
-                        }),
-                    },
-                ],
-                alignment: Alignment::Left,
-            }),
-            Layout::Grid(LayoutGrid {
-                elements: vec![
-                    GridElement {
-                        min_width: None,
-                        max_width: None,
-                        default_width: None,
-                        margin: Margin {
-                            top: 3,
-                            bottom: 0,
-                            left: 20,
-                            right: 0,
-                        },
-                        element: Layout::Element(Element {
-                            text: String::from("A"),
-                            font: Font {
-                                name: String::from("Arial"),
-                                size: 12,
-                            },
-                            alignment: Alignment::Left,
-                        }),
-                    },
-                    GridElement {
-                        min_width: None,
-                        max_width: None,
-                        default_width: None,
-                        margin: Margin {
-                            top: 0,
-                            bottom: 2,
-                            left: 0,
-                            right: 20,
-                        },
-                        element: Layout::Element(Element {
-                            text: String::from("B"),
-                            font: Font {
-                                name: String::from("Arial"),
-                                size: 12,
-                            },
-                            alignment: Alignment::Left,
-                        }),
-                    },
-                ],
-                alignment: Alignment::Right,
-            }),
-            Layout::Grid(LayoutGrid {
-                elements: vec![
-                    GridElement {
-                        min_width: None,
-                        max_width: None,
-                        default_width: None,
-                        margin: Margin {
-                            top: 3,
-                            bottom: 0,
-                            left: 20,
-                            right: 0,
-                        },
-                        element: Layout::Element(Element {
-                            text: String::from("A"),
-                            font: Font {
-                                name: String::from("Arial"),
-                                size: 12,
-                            },
-                            alignment: Alignment::Left,
-                        }),
-                    },
-                    GridElement {
-                        min_width: None,
-                        max_width: None,
-                        default_width: None,
-                        margin: Margin {
-                            top: 0,
-                            bottom: 2,
-                            left: 0,
-                            right: 20,
-                        },
-                        element: Layout::Element(Element {
-                            text: String::from("B"),
-                            font: Font {
-                                name: String::from("Arial"),
-                                size: 12,
-                            },
-                            alignment: Alignment::Left,
-                        }),
-                    },
-                ],
-                alignment: Alignment::Center,
-            }),
-        ]);
-    }
+    fn test_compute_blueprint() {}
 }

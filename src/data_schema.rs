@@ -32,12 +32,12 @@ impl DocumentDataType {
                 }
             },
             ItemContent::List(items) => {
-                if let DocumentDataType::List(t) = data_type  {
+                if let DocumentDataType::List(t) = data_type {
                     items.iter().all(|i| DocumentDataType::validate(t, i))
                 } else {
                     false
                 }
-            },
+            }
         }
     }
 }
@@ -171,21 +171,13 @@ mod tests {
         let schema = DataSchema::from_json(json);
         assert_eq!(schema[0].name, "Education");
         assert_eq!(schema[0].item_schema[0].name, "School");
-        assert_eq!(
-            schema[0].item_schema[0].data_type,
-            DocumentDataType::String
-        );
+        assert_eq!(schema[0].item_schema[0].data_type, DocumentDataType::String);
         assert_eq!(schema[0].item_schema[1].name, "Degree");
-        assert_eq!(
-            schema[0].item_schema[1].data_type,
-            DocumentDataType::String
-        );
+        assert_eq!(schema[0].item_schema[1].data_type, DocumentDataType::String);
         assert_eq!(schema[0].item_schema[4].name, "Date-Finished");
         assert_eq!(
             schema[0].item_schema[4].data_type,
-            DocumentDataType::Types(vec![
-                DocumentDataType::Date,
-                DocumentDataType::String])
+            DocumentDataType::Types(vec![DocumentDataType::Date, DocumentDataType::String])
         );
 
         assert_eq!(schema[3].item_schema[5].name, "Google Scholar");
