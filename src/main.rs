@@ -5,11 +5,11 @@ mod resume_data;
 mod spatial_box;
 mod text_layout_schema;
 
-use ascii_layout_schema::{Alignment, Element, Layout, Margin};
+use ascii_layout_schema::{Alignment, Layout, Margin};
 
 use std::{fs, path::Path};
 
-use crate::ascii_layout_schema::{Container, ContainerInner, LayoutSchema, Stack, Width};
+use crate::ascii_layout_schema::LayoutSchema;
 
 fn main() {
     let schema = fs::read_to_string("data/data-schemas.json").unwrap();
@@ -20,12 +20,7 @@ fn main() {
 
     let layout_schemas = vec![LayoutSchema {
         schema_name: "Work-Experience".to_string(),
-        header_layout_schema: Layout::Container(Container {
-            inner: ContainerInner::Element(Element::Ref("Title".to_string())),
-            width: Width::Fixed(100),
-            alignment: Alignment::Left,
-            margin: Margin::new(0, 0, 0, 0),
-        }),
+        header_layout_schema: Layout::mk_ref("Title".to_string()),
         item_layout_schema: Layout::mk_stack(vec![
             Layout::mk_row(vec![
                 Layout::mk_ref("Company".to_string()).with_width(70),
