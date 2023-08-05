@@ -17,14 +17,6 @@
             {
                 "Company": "Amazon Web Services Privacy Engineering Team - Automated Reasoning",
                 "Position": "Applied Science Intern",
-                "Date-Started": "May 2023",
-                "Date-Finished": "Aug 2023",
-                "Text": "Developed a dataflow analysis method for a state machine based DSL.",
-                "Skills": ["Python", "Java", "Dataflow Analysis", "Symbolic Execution"]
-            },
-            {
-                "Company": "Amazon Web Services Privacy Engineering Team - Automated Reasoning",
-                "Position": "Applied Science Intern",
                 "Date-Started": "May 2022",
                 "Date-Finished": "Aug 2022",
                 "Text": "Implemented of a novel encryption scheme on top of the AWS Encryption SDK.",

@@ -1,5 +1,3 @@
-use core::num;
-use std::borrow::BorrowMut;
 use std::collections::HashMap;
 
 use serde::{Deserialize, Serialize};
@@ -9,10 +7,11 @@ use std::{io::ErrorKind, path::Path};
 use std::fs;
 use std::io::Error;
 
+use crate::alignment::Alignment;
 use crate::data_schema::{DataSchema, Field};
+use crate::margin::Margin;
 use crate::point::Point;
 use crate::resume_data::{ItemContent, ResumeData};
-use crate::spatial_box::SpatialBox;
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct LayoutSchema {
@@ -118,7 +117,7 @@ impl Layout {
     pub fn mk_ref(text: String) -> Layout {
         Layout::Container(Container::ref_container(text))
     }
-    
+
     pub fn wrap_in_container(&self) -> Layout {
         Layout::Container(Container {
             width: Width::Fill,
@@ -139,7 +138,6 @@ impl Layout {
             }),
         }
     }
-
 
     pub fn with_margin(&self, margin: Margin) -> Layout {
         match self {
@@ -197,30 +195,12 @@ impl Container {
         }
     }
 
-    pub fn text_container_with_margin(text: String, margin: Margin) -> Container {
-        Container {
-            width: Width::Fixed(text.len() as u32 + margin.left + margin.right),
-            inner: ContainerInner::Element(Element::Text(text)),
-            alignment: Alignment::Left,
-            margin: margin,
-        }
-    }
-
     pub fn ref_container(text: String) -> Container {
         Container {
             inner: ContainerInner::Element(Element::Ref(text)),
             width: Width::Fill,
             alignment: Alignment::Left,
             margin: Margin::default(),
-        }
-    }
-
-    pub fn ref_container_with_margin(text: String, margin: Margin) -> Container {
-        Container {
-            inner: ContainerInner::Element(Element::Ref(text)),
-            width: Width::Fill,
-            alignment: Alignment::Left,
-            margin: margin,
         }
     }
 }
@@ -282,26 +262,6 @@ impl ContainerInner {
             ContainerInner::Grid(layouts) => layouts.iter().map(|l| l.get_width()).sum(),
             ContainerInner::Element(e) => e.text().len() as u32,
         }
-    }
-}
-
-impl Layout {
-    pub fn text_container(text: String, width: Width) -> Layout {
-        Layout::Container(Container {
-            inner: ContainerInner::Element(Element::Text(text)),
-            width: width,
-            alignment: Alignment::Left,
-            margin: Margin::default(),
-        })
-    }
-
-    pub fn text_container_with_margin(text: String, width: Width, margin: Margin) -> Layout {
-        Layout::Container(Container {
-            inner: ContainerInner::Element(Element::Text(text)),
-            width: width,
-            alignment: Alignment::Left,
-            margin: margin,
-        })
     }
 }
 
@@ -434,21 +394,11 @@ impl Layout {
                                 };
 
                                 text_container.margin = if i == 0 {
-                                    Margin::new(
-                                        container.margin.top,
-                                        0,
-                                        container.margin.left,
-                                        container.margin.right,
-                                    )
+                                    container.margin.with_bottom(0)
                                 } else if i == number_of_lines - 1 {
-                                    Margin::new(
-                                        0,
-                                        container.margin.bottom,
-                                        container.margin.left,
-                                        container.margin.right,
-                                    )
+                                    container.margin.with_top(0)
                                 } else {
-                                    Margin::new(0, 0, container.margin.left, container.margin.right)
+                                    container.margin.with_bottom(0).with_top(0)
                                 };
                                 layouts.push(text_container);
                             }
@@ -577,50 +527,6 @@ impl Layout {
                 }
             }
         }
-    }
-}
-
-#[derive(Serialize, Deserialize, Debug, Clone, Copy)]
-pub struct Margin {
-    pub top: u32,
-    pub bottom: u32,
-    pub left: u32,
-    pub right: u32,
-}
-
-impl Default for Margin {
-    fn default() -> Self {
-        Margin {
-            top: 0,
-            bottom: 0,
-            left: 0,
-            right: 0,
-        }
-    }
-}
-
-impl Margin {
-    pub fn new(top: u32, bottom: u32, left: u32, right: u32) -> Margin {
-        Margin {
-            top,
-            bottom,
-            left,
-            right,
-        }
-    }
-}
-
-#[derive(Serialize, Deserialize, Debug, Clone, Copy)]
-pub enum Alignment {
-    Left,
-    Center,
-    Right,
-    Justified,
-}
-
-impl Default for Alignment {
-    fn default() -> Self {
-        Alignment::Left
     }
 }
 
