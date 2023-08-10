@@ -1,5 +1,9 @@
 # CVDL: CV Description Language
 
+![](https://badgen.net/static/license/MIT/blue)
+![](https://badgen.net/github/stars/alpaylan/cvdl)
+
+
 CVDL is an open-source document model focused on creating templates for structured documents. For the short term,
 our focus is on CV's, in the long term, we will widen the constructs in the language for supporting more document types easily.
 
