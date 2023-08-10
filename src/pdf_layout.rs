@@ -30,7 +30,7 @@ use crate::spatial_box::SpatialBox;
 use rusttype::{point, Font as RFont, Scale};
 
 pub struct PdfLayout {
-    doc: DocumentDefinition,
+    pub doc: DocumentDefinition,
 }
 
 impl PdfLayout {
