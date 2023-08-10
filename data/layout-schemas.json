@@ -1,0 +1,104 @@
+[
+    {
+        "schema-name": "Work-Experience",
+        "header-layout-schema": {
+            "Ref": {
+                "item": "Title",
+                "width": 70,
+                "font": {
+                    "name": "Exo-Bold",
+                    "size": 14.0
+                }
+            }
+        },
+        "item-layout-schema": {
+            "Stack": {
+                "elements": [
+                    {
+                        "FlexRow": {
+                            "elements": [
+                                {
+                                    "Ref": {
+                                        "item": "Company",
+                                        "font": {
+                                            "name": "Exo-Bold",
+                                            "size": 12.0
+                                        },
+                                        "width": 70.0
+                                    }
+                                },
+                                {
+                                    "FrozenRow": {
+                                        "elements": [
+                                            {
+                                                "Ref": {
+                                                    "item": "Date-Started",
+                                                    "font": {
+                                                        "name": "Exo",
+                                                        "size": 12.0
+                                                    }
+
+                                                }
+                                            },
+                                            {
+                                                "Text": {
+                                                    "item": "-",
+                                                    "font": {
+                                                        "name": "Exo",
+                                                        "size": 12.0
+                                                    }
+                                                }
+                                            },
+                                            {
+                                                "Ref": {
+                                                    "item": "Date-Finished",
+                                                    "font": {
+                                                        "name": "Exo",
+                                                        "size": 12.0
+                                                    }
+                                                }
+                                            }
+                                        ],
+                                        "width": 30,
+                                        "alignment": "Right"
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        "Ref": {
+                            "item": "Position",
+                            "width": 70,
+                            "font": {
+                                "name": "Exo",
+                                "size": 12.0
+                            }
+                        }
+                    },
+                    {
+                        "Ref": {
+                            "item": "Text",
+                            "width": 70,
+                            "font": {
+                                "name": "Exo",
+                                "size": 12.0
+                            }
+                        }
+                    },
+                    {
+                        "Ref": {
+                            "item": "Skills",
+                            "width": 70,
+                            "font": {
+                                "name": "Exo",
+                                "size": 12.0
+                            }
+                        }
+                    }
+                ],
+                "width": 100
+            }
+        }
+    }
+]

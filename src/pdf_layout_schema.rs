@@ -1,6 +1,4 @@
-use std::borrow::BorrowMut;
 use std::collections::HashMap;
-use std::io::Write;
 
 use printpdf::IndirectFontRef;
 use printpdf::Mm;
@@ -22,7 +20,37 @@ use crate::point::Point;
 use crate::resume_data::{ItemContent, ResumeData};
 
 use rusttype::{point, Font, Scale};
-use image::{DynamicImage, Rgba};
+
+
+#[derive(Serialize, Deserialize, Debug, Clone, Copy)]
+#[serde(untagged)]
+pub enum Width {
+    Fixed(u32),
+    Fill,
+}
+
+impl Default for Width {
+    fn default() -> Self {
+        return Width::Fill;
+    }
+}
+
+impl Width {
+    pub fn is_fixed(&self) -> bool {
+        match self {
+            Width::Fixed(_) => true,
+            Width::Fill => false,
+        }
+    }
+
+    pub fn get_fixed(&self) -> Option<u32> {
+        match self {
+            Width::Fixed(w) => Some(*w),
+            Width::Fill => None,
+        }
+    }
+}
+
 
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -185,11 +213,6 @@ impl Layout {
     }
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone, Copy)]
-pub enum Width {
-    Fixed(u32),
-    Fill,
-}
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Container {
@@ -390,7 +413,7 @@ impl Layout {
                             let mut start = 0;
                             for i in 0..number_of_lines {
                                 let mut len = element.text().len() - start;
-                                while(get_width_and_height(element.text().as_str()[start..(start + len)].to_string()).1 > container_width) {
+                                while get_width_and_height(element.text().as_str()[start..(start + len)].to_string()).1 > container_width {
                                     len -= 1;
                                 }
                                 let text = element.text().as_str()[start..(start + len)].to_string();
@@ -451,12 +474,12 @@ impl Layout {
                                     let top_right = top_left.move_x_by(container_width as i32);
 
 
-                                    println!(
-                                        "Drawing text {:?} at {}x{}",
-                                        element.text(),
-                                        top_left.x,
-                                        792 - top_left.y
-                                    );
+                                    // println!(
+                                    //     "Drawing text {:?} at {}x{}",
+                                    //     element.text(),
+                                    //     top_left.x,
+                                    //     792 - top_left.y
+                                    // );
 
                                     let height = get_width_and_height(element.text().clone()).0;
 
@@ -497,12 +520,12 @@ impl Layout {
                                 ContainerInner::Element(element) => {
                                     let top_right = top_left.move_x_by(container_width as i32);
 
-                                    println!(
-                                        "Drawing text {} at {}x{}",
-                                        element.text(),
-                                        top_left.x,
-                                        792 - top_left.y
-                                    );
+                                    // println!(
+                                    //     "Drawing text {} at {}x{}",
+                                    //     element.text(),
+                                    //     top_left.x,
+                                    //     792 - top_left.y
+                                    // );
 
                                     current_layer.use_text(
                                         element.text().clone(),
@@ -543,12 +566,12 @@ impl Layout {
                                 ContainerInner::Element(element) => {
                                     let top_right = top_left.move_x_by(container_width as i32);
 
-                                    println!(
-                                        "Drawing text {} at {}x{}",
-                                        element.text(),
-                                        top_left.x,
-                                        792 - top_left.y
-                                    );
+                                    // println!(
+                                    //     "Drawing text {} at {}x{}",
+                                    //     element.text(),
+                                    //     top_left.x,
+                                    //     792 - top_left.y
+                                    // );
 
                                     current_layer.use_text(
                                         element.text().clone(),
@@ -602,7 +625,7 @@ pub fn get_width_and_height(text: String) -> (u32, u32) {
         (max_x - min_x) as u32
     };
 
-    println!("glyphs_height: {}, glyphs_width: {}", glyphs_height, glyphs_width);
+    // println!("glyphs_height: {}, glyphs_width: {}", glyphs_height, glyphs_width);
 
     (glyphs_height, glyphs_width)
 }
@@ -625,8 +648,49 @@ impl Element {
 
 #[cfg(test)]
 mod tests {
+    use crate::{data_schema, resume_data};
+
     use super::*;
 
     #[test]
-    fn test_compute_blueprint() {}
+    fn test_compute_blueprint() {
+        let schema = fs::read_to_string("data/data-schemas.json").unwrap();
+        let data_schemas = data_schema::DataSchema::from_json(&schema);
+    
+        let resume = fs::read_to_string("data/resume2.json").unwrap();
+        let resume_data = resume_data::ResumeData::from_json(&resume);
+    
+        let layout_schemas = vec![LayoutSchema {
+            schema_name: "Work-Experience".to_string(),
+            header_layout_schema: Layout::mk_ref("Title".to_string()),
+            item_layout_schema: Layout::mk_stack(vec![
+                Layout::mk_row(vec![
+                    Layout::mk_ref("Company".to_string()).with_width(400),
+                    Layout::mk_row(vec![
+                        Layout::mk_ref("Date-Started".to_string()),
+                        Layout::mk_text("-".to_string()).with_margin(Margin::new(0, 0, 1, 1)),
+                        Layout::mk_ref("Date-Finished".to_string()),
+                    ])
+                    .with_width(200)
+                    .with_alignment(Alignment::Right),
+                ]),
+                Layout::mk_ref("Position".to_string()).with_width(400),
+                Layout::mk_ref("Text".to_string()).with_width(400),
+                Layout::mk_ref("Skills".to_string()).with_width(400),
+            ])
+            .with_width(692)
+            .with_alignment(Alignment::Left)
+            .with_margin(Margin::new(1, 0, 0, 0)),
+        }];
+    
+        LayoutSchema::render(
+            layout_schemas,
+            resume_data,
+            data_schemas,
+            Path::new("output.pdf"),
+        )
+        .unwrap();
+    
+    
+    }
 }
