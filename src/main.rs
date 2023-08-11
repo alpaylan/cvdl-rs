@@ -41,7 +41,6 @@ fn main() {
     let resume = fs::read_to_string(resume_path).unwrap();
     let resume_data = resume_data::ResumeData::from_json(&resume);
 
-
     let mut font_dict = FontDict::new();
 
     // This only succeeds if collection consists of one font
@@ -65,12 +64,19 @@ fn main() {
     };
 
     let results_path = env::args().nth(4).expect("No results path provided");
+    let debug = if let Some(is_debug) = env::args().nth(5) {
+        is_debug == "--debug"
+    } else {
+        false
+    };
+
     pdf_layout
         .render(
             layout_schemas,
             resume_data,
             data_schemas,
             Path::new(results_path.as_str()),
+            debug
         )
         .unwrap();
 }
