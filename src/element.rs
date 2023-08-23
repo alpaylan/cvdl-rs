@@ -1,11 +1,16 @@
-use std::collections::HashMap;
+use std::{collections::HashMap, fmt::Display};
 
 use serde::{Deserialize, Serialize};
 
 use crate::{alignment::Alignment, font::Font, margin::Margin, width::Width};
 use rusttype::Font as RFont;
+use uuid::Uuid;
+
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct Element {
+    #[serde(skip)]
+    #[serde(default = "Uuid::new_v4")]
+    pub uid: Uuid,
     pub item: String,
     #[serde(default = "Margin::default")]
     pub margin: Margin,
@@ -20,6 +25,21 @@ pub struct Element {
     #[serde(skip)]
     #[serde(default = "bool::default")]
     pub is_fill: bool,
+    #[serde(skip)]
+    #[serde(default = "Option::default")]
+    pub url: Option<String>,
+}
+
+impl Display for Element {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let mut s = String::new();
+        if let Some(url) = &self.url {
+            s.push_str(&format!("[{}]", self.item));
+            s.push_str(&format!("({})", url));
+        }
+        
+        write!(f, "{}", s)
+    }
 }
 
 impl Default for Element {
@@ -32,6 +52,8 @@ impl Default for Element {
             text_width: Width::default(),
             font: Font::default(),
             is_fill: false,
+            url: None,
+            uid: Uuid::new_v4(),
         }
     }
 }
@@ -46,6 +68,8 @@ impl Element {
             text_width: self.text_width,
             font: self.font.clone(),
             is_fill: self.is_fill,
+            url: self.url.clone(),
+            uid: self.uid,
         }
     }
 
@@ -58,6 +82,8 @@ impl Element {
             text_width: self.text_width,
             font: self.font.clone(),
             is_fill: self.is_fill,
+            url: self.url.clone(),
+            uid: self.uid,
         }
     }
 
@@ -70,6 +96,8 @@ impl Element {
             text_width: self.text_width,
             font: self.font.clone(),
             is_fill: self.is_fill,
+            url: self.url.clone(),
+            uid: self.uid,
         }
     }
 
@@ -82,6 +110,8 @@ impl Element {
             text_width: self.text_width,
             font: self.font.clone(),
             is_fill: self.is_fill,
+            url: self.url.clone(),
+            uid: self.uid,
         }
     }
 
@@ -94,6 +124,22 @@ impl Element {
             text_width,
             font: self.font.clone(),
             is_fill: self.is_fill,
+            url: self.url.clone(),
+            uid: self.uid,
+        }
+    }
+
+    pub fn with_url(&self, url: String) -> Element {
+        Element {
+            item: self.item.clone(),
+            margin: self.margin,
+            alignment: self.alignment,
+            width: self.width,
+            text_width: self.text_width,
+            font: self.font.clone(),
+            is_fill: self.is_fill,
+            url: Some(url),
+            uid: self.uid,
         }
     }
 
@@ -106,7 +152,10 @@ impl Element {
             text_width: self.text_width,
             font: self.font.clone(),
             is_fill: self.is_fill,
+            url: self.url.clone(),
+            uid: self.uid,
         }
+        
     }
 
     pub fn fill_fonts(&self, fonts: &HashMap<String, RFont>) -> Element {
@@ -123,6 +172,8 @@ impl Element {
                 text_width: Width::Fixed(text_width_with_font),
                 font: self.font.clone(),
                 is_fill: self.is_fill,
+                url: self.url.clone(),
+                uid: self.uid,
             }
         } else {
             Element {
@@ -133,6 +184,8 @@ impl Element {
                 text_width: Width::Fixed(text_width_with_font),
                 font: self.font.clone(),
                 is_fill: self.is_fill,
+                url: self.url.clone(),
+                uid: self.uid,
             }
         }
         
@@ -155,17 +208,21 @@ impl Element {
 
             if candidate_width > self.width.get_fixed_unchecked() {
                 line.pop();
-                lines.push(self.with_item(line));
+                let line_width = self.font.get_width(&line, font_dict);
+                lines.push(self.with_item(line).with_text_width(Width::Fixed(line_width)));
                 line = String::new();
             }
-
+            
             line.push_str(word);
             line.push(' ');
         }
 
+        
+
         line.pop();
         if line.len() > 0 {
-            lines.push(self.with_item(line));
+            let line_width = self.font.get_width(&line, font_dict);
+            lines.push(self.with_item(line).with_text_width(Width::Fixed(line_width)));
         }
 
         lines
@@ -181,6 +238,8 @@ impl Element {
                 text_width: self.text_width,
                 font: self.font.clone(),
                 is_fill: false,
+                url: self.url.clone(),
+                uid: self.uid,
             }
         } else {
             Element {
@@ -191,6 +250,8 @@ impl Element {
                 text_width: self.text_width,
                 font: self.font.clone(),
                 is_fill: true,
+                url: self.url.clone(),
+                uid: self.uid,
             }
         }
     }
@@ -216,6 +277,8 @@ mod tests {
             text_width: Width::default(),
             font: Font::default(),
             is_fill: false,
+            url: None,
+            uid: Uuid::new_v4(),
         };
 
         let element = element.fill_fonts(&font_dict);
@@ -232,6 +295,8 @@ mod tests {
             text_width: Width::default(),
             font: Font::default(),
             is_fill: false,
+            url: None,
+            uid: Uuid::new_v4(),
         };
 
         let element = element.fill_fonts(&font_dict);

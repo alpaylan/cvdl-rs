@@ -56,6 +56,7 @@ mod tests {
             size: 12.0,
         },
         is_fill: false,
+        url: None,
     },
 )
 "#]];
@@ -137,6 +138,7 @@ mod tests {
                                     size: 12.0,
                                 },
                                 is_fill: false,
+                                url: None,
                             },
                         ),
                         Text(
@@ -156,6 +158,7 @@ mod tests {
                                     size: 12.0,
                                 },
                                 is_fill: false,
+                                url: None,
                             },
                         ),
                         Ref(
@@ -175,6 +178,7 @@ mod tests {
                                     size: 12.0,
                                 },
                                 is_fill: false,
+                                url: None,
                             },
                         ),
                     ],
@@ -209,6 +213,7 @@ mod tests {
                         size: 12.0,
                     },
                     is_fill: false,
+                    url: None,
                 },
             ),
             Ref(
@@ -230,6 +235,7 @@ mod tests {
                         size: 12.0,
                     },
                     is_fill: false,
+                    url: None,
                 },
             ),
             Ref(
@@ -251,6 +257,7 @@ mod tests {
                         size: 12.0,
                     },
                     is_fill: false,
+                    url: None,
                 },
             ),
         ],

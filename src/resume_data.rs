@@ -34,6 +34,7 @@ pub enum ItemContent {
     None,
     String(String),
     List(Vec<ItemContent>),
+    Url { url: String, text: String },
 }
 
 impl ItemContent {
@@ -46,6 +47,7 @@ impl ItemContent {
                 .map(ItemContent::to_string)
                 .collect::<Vec<String>>()
                 .join(", "),
+            ItemContent::Url { url, text } => text.clone(),
         }
     }
 }
@@ -94,7 +96,7 @@ mod tests {
                 "Location": "Maryland, USA" 
             },
             { 
-                "School": "Middle East Technical University",
+                "School": {"url": "http://metu.edu.tr", "text": "Middle East Technical University"},
                 "Degree": "Bachelor of Engineering",
                 "Department": "Computer Engineering",
                 "Date-Started": "2017",

@@ -1,14 +1,16 @@
 use std::collections::HashMap;
 
+use printpdf::lopdf::content::Operation;
+use printpdf::Actions;
+use printpdf::BuiltinFont;
 use printpdf::Color;
 use printpdf::IndirectFontRef;
 use printpdf::Line;
+use printpdf::LinkAnnotation;
 use printpdf::Mm;
 use printpdf::PdfDocument;
-use printpdf::PdfLayerReference;
-
+use printpdf::Rect;
 use printpdf::Rgb;
-use serde::{Deserialize, Serialize};
 
 use std::{io::ErrorKind, path::Path};
 
@@ -17,20 +19,16 @@ use std::fs;
 use std::io::BufWriter;
 use std::io::Error;
 
-use crate::alignment::Alignment;
-use crate::data_schema::{DataSchema, Field};
+use crate::data_schema::DataSchema;
 use crate::document::DocumentDefinition;
 use crate::element::Element;
-use crate::font;
-use crate::font::FontDict;
-use crate::layout::Layout;
 use crate::layout_schema::LayoutSchema;
-use crate::margin::Margin;
-use crate::point::Point;
-use crate::resume_data::{ItemContent, ResumeData};
+use crate::resume_data::ResumeData;
 use crate::spatial_box::SpatialBox;
+use rusttype::Font as RFont;
 
-use rusttype::{point, Font as RFont, Scale};
+use printpdf::lopdf::dictionary;
+use printpdf::lopdf::Object;
 
 pub struct PdfLayout {
     pub doc: DocumentDefinition,
@@ -119,7 +117,7 @@ impl PdfLayout {
         // Render the boxes
         for element_box in boxes {
             let (box_, element) = element_box;
-            println!(
+            log::debug!(
                 "({}, {})({}, {}): {}",
                 box_.top_left.x,
                 box_.top_left.y,
@@ -129,7 +127,6 @@ impl PdfLayout {
             );
 
             if debug {
-                // Is the shape stroked? Is the shape closed? Is the shape filled?
                 let points: Vec<(printpdf::Point, bool)> = vec![
                     (
                         printpdf::Point::new(
@@ -171,6 +168,7 @@ impl PdfLayout {
                 current_layer.set_outline_color(outline_color);
                 current_layer.add_shape(line1);
             };
+
             current_layer.use_text(
                 element.item,
                 (element.font.size * 2.0) as f64,
@@ -178,8 +176,25 @@ impl PdfLayout {
                 Mm((self.doc.height
                     - (box_.top_left.y + element.font.get_height(&self.doc.font_dict) as u32))
                     .into()),
-                &font_dict.get(&element.font.name).unwrap(),
+                font_dict.get(&element.font.name).unwrap(),
             );
+
+            if let Some(url) = element.url {
+                let rect = Rect::new(
+                    Mm(box_.top_left.x.into()),
+                    Mm((self.doc.height - box_.bottom_right.y).into()),
+                    Mm(box_.bottom_right.x.into()),
+                    Mm((self.doc.height - box_.top_left.y).into()),
+                );
+                println!("addding url: {:?}", url);
+                current_layer.add_link_annotation(LinkAnnotation::new(
+                    rect,
+                    Some(printpdf::BorderArray::default()),
+                    Some(printpdf::ColorArray::default()),
+                    printpdf::Actions::uri(url),
+                    Some(printpdf::HighlightingMode::Invert),
+                ));
+            }
         }
 
         doc.save(&mut BufWriter::new(fs::File::create(filepath).unwrap()))
@@ -192,7 +207,7 @@ impl PdfLayout {
 
 #[cfg(test)]
 mod tests {
-    use crate::{data_schema, layout_schema, resume_data};
+    use crate::{data_schema, font::FontDict, layout_schema, resume_data};
 
     use super::*;
 

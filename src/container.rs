@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::{collections::HashMap, fmt::Display};
 
 use serde::{Deserialize, Serialize};
 
@@ -7,8 +7,13 @@ use crate::{
     width::Width,
 };
 
+use uuid::Uuid;
+
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct Container {
+    #[serde(skip)]
+    #[serde(default = "Uuid::new_v4")]
+    pub uid: uuid::Uuid,
     pub elements: Vec<Layout>,
     #[serde(default = "Margin::default")]
     pub margin: Margin,
@@ -18,9 +23,19 @@ pub struct Container {
     pub width: Width,
 }
 
+impl Display for Container {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let mut s = String::new();
+        for element in &self.elements {
+            s.push_str(&element.to_string());
+        }
+        write!(f, "{}", s)
+    }
+}
 impl Container {
     pub fn empty_container() -> Container {
         Container {
+            uid: Uuid::new_v4(),
             elements: vec![],
             margin: Margin::default(),
             alignment: Alignment::default(),
@@ -30,6 +45,7 @@ impl Container {
 
     pub fn with_elements(&self, elements: Vec<Layout>) -> Container {
         Container {
+            uid: self.uid,
             elements,
             margin: self.margin,
             alignment: self.alignment,
@@ -38,6 +54,7 @@ impl Container {
     }
     pub fn with_margin(&self, margin: Margin) -> Container {
         Container {
+            uid: self.uid,
             elements: self.elements.clone(),
             margin,
             alignment: self.alignment,
@@ -47,6 +64,7 @@ impl Container {
 
     pub fn with_alignment(&self, alignment: Alignment) -> Container {
         Container {
+            uid: self.uid,
             elements: self.elements.clone(),
             margin: self.margin,
             alignment,
@@ -56,6 +74,7 @@ impl Container {
 
     pub fn with_width(&self, width: Width) -> Container {
         Container {
+            uid: self.uid,
             elements: self.elements.clone(),
             margin: self.margin,
             alignment: self.alignment,
@@ -65,6 +84,7 @@ impl Container {
 
     pub fn instantiate(&self, section: &HashMap<String, ItemContent>) -> Container {
         Container {
+            uid: self.uid,
             elements: self
                 .elements
                 .iter()
@@ -84,6 +104,7 @@ impl Container {
         };
 
         Container {
+            uid: self.uid,
             elements: self.elements.iter().map(|e| e.bound_width(bound)).collect(),
             margin: self.margin,
             alignment: self.alignment,
@@ -93,6 +114,7 @@ impl Container {
 
     pub fn scale_width(&self, w: u32) -> Container {
         Container {
+            uid: self.uid,
             elements: self.elements.iter().map(|e| e.scale_width(w)).collect(),
             margin: self.margin,
             alignment: self.alignment,
@@ -102,6 +124,7 @@ impl Container {
 
     pub fn fill_fonts(&self, fonts: &FontDict) -> Container {
         Container {
+            uid: self.uid,
             elements: self.elements.iter().map(|e| e.fill_fonts(fonts)).collect(),
             margin: self.margin,
             alignment: self.alignment,

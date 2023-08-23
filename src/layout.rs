@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use std::fmt::Display;
 
 use serde::{Deserialize, Serialize};
 
@@ -36,24 +37,41 @@ impl Into<BasicLayout> for Layout {
     }
 }
 
+impl Display for Layout {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Layout::Stack(container) => write!(f, "{}", container),
+            Layout::FrozenRow(container) => write!(f, "{}", container),
+            Layout::FlexRow(container) => write!(f, "{}", container),
+            Layout::Text(element) => write!(f, "{}", element),
+            Layout::Ref(element) => write!(f, "{}", element),
+        }
+    }
+}
+
 impl Layout {
     pub fn new_stack(container: Container) -> Layout {
+        log::debug!("Creating new stack: {}", container.uid);
         Layout::Stack(container)
     }
 
     pub fn new_frozen_row(container: Container) -> Layout {
+        log::debug!("Creating new frozen row: {}", container.uid);
         Layout::FrozenRow(container)
     }
 
     pub fn new_flex_row(container: Container) -> Layout {
+        log::debug!("Creating new flex row: {}", container.uid);
         Layout::FlexRow(container)
     }
 
     pub fn new_text(element: Element) -> Layout {
+        log::debug!("Creating new text element: {}", element.uid);
         Layout::Text(element)
     }
 
     pub fn new_ref(element: Element) -> Layout {
+        log::debug!("Creating new ref element: {}", element.uid);
         Layout::Ref(element)
     }
 }
@@ -119,6 +137,7 @@ impl Layout {
     }
 
     pub fn is_instantiated(&self) -> bool {
+        log::debug!("Checking if {} is instantiated...", self);
         match self {
             Layout::Stack(c) | Layout::FrozenRow(c) | Layout::FlexRow(c) => {
                 c.elements.iter().all(|e| e.is_instantiated())
@@ -143,7 +162,13 @@ impl Layout {
         section: &HashMap<String, ItemContent>,
     ) -> Layout {
         if let Some(text) = section.get(&element.item) {
-            Layout::Text(element.with_item(text.to_string()))
+            let mut element = element.with_item(text.to_string());
+
+            if let ItemContent::Url { url, text } = text {
+                element = element.with_url(url.clone())
+            }
+
+            Layout::Text(element)
         } else {
             Layout::Stack(Container::empty_container())
         }
@@ -198,19 +223,32 @@ impl Layout {
     }
 
     pub fn normalize(&self, document: &DocumentDefinition) -> Layout {
+        log::debug!("Normalizing document, checking if {} is instantiated...", self);
+
         if !self.is_instantiated() {
+            log::error!("Document is not instantiated {}", self);
             panic!("Cannot normalize uninstantiated layout");
         };
+
+        log::debug!("Document is instantiated. Checking if all widths are bounded...");
 
         if !self.is_bounded() {
             panic!("Cannot normalize unbounded layout");
         };
 
+        log::debug!("Document is bounded. Scaling widths...");
+
         let scaled_layout = self.scale_width(document.width);
+
+        log::debug!("Widths scaled. Filling fonts...");
 
         let font_filled_layout = scaled_layout.fill_fonts(&document.font_dict);
 
+        log::debug!("Fonts filled. Breaking lines...");
+
         let broken_layout = font_filled_layout.break_lines(&document.font_dict);
+
+        log::debug!("Lines broken.");
 
         broken_layout
     }
@@ -252,6 +290,7 @@ impl Layout {
                     );
                 } else {
                     Layout::new_flex_row(Container {
+                        uid: c.uid,
                         elements: c
                             .elements
                             .iter()
@@ -351,7 +390,7 @@ impl Layout {
                 unreachable!("Cannot compute textbox positions of frozen row: {:?}", self)
             }
             Layout::Text(e) => {
-                let width = e.width.get_fixed_unchecked();
+                let width = e.text_width.get_fixed_unchecked();
                 let height = e.font.get_height(font_dict);
                 let textbox = SpatialBox::new(
                     top_left.clone(),

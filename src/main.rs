@@ -25,9 +25,7 @@ use std::path::Path;
 use std::env;
 
 fn main() {
-    for argument in env::args() {
-        println!("{}", argument);
-    }
+    env_logger::init();
 
     let data_schema_path = env::args().nth(1).expect("No data schema path provided");
     let schema = fs::read_to_string(data_schema_path).unwrap();

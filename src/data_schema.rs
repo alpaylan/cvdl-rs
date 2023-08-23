@@ -38,6 +38,7 @@ impl DocumentDataType {
                     false
                 }
             }
+            ItemContent::Url { url, text } => true,
         }
     }
 }
