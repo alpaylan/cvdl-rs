@@ -27,7 +27,7 @@ impl Display for Container {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let mut s = String::new();
         for element in &self.elements {
-            s.push_str(&element.to_string());
+            s.push_str(&format!("{}\n", element));
         }
         write!(f, "{}", s)
     }
@@ -97,10 +97,12 @@ impl Container {
     }
 
     pub fn bound_width(&self, width: f32) -> Container {
-        let bound = if self.width.is_fixed() && self.width.get_fixed().unwrap() <= width {
-            self.width.get_fixed().unwrap()
-        } else {
-            width
+        let bound = match self.width {
+            Width::Absolute(w) => {
+                f32::min(w, width)
+            },
+            Width::Percentage(_) => unreachable!("Layout::bound_width: Cannot bounded width for non-unitized widths!"),
+            Width::Fill => width,
         };
 
         Container {
@@ -108,17 +110,17 @@ impl Container {
             elements: self.elements.iter().map(|e| e.bound_width(bound)).collect(),
             margin: self.margin,
             alignment: self.alignment,
-            width: Width::Fixed(bound),
+            width: Width::Absolute(bound),
         }
     }
 
-    pub fn scale_width(&self, w: u32) -> Container {
+    pub fn scale_width(&self, w: f32) -> Container {
         Container {
             uid: self.uid,
             elements: self.elements.iter().map(|e| e.scale_width(w)).collect(),
             margin: self.margin,
             alignment: self.alignment,
-            width: self.width.scale(w as f32 / 100.0),
+            width: self.width.scale(w),
         }
     }
 

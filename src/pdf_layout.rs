@@ -60,7 +60,7 @@ impl PdfLayout {
         font_dict.insert("Exo".to_string(), exo_font);
         font_dict.insert("Exo-Bold".to_string(), exo_bold_font);
 
-        let mut height = 0;
+        let mut height = 0.0;
         let mut boxes: Vec<(SpatialBox, Element)> = Vec::new();
 
         for section in resume_data.sections {
@@ -82,7 +82,6 @@ impl PdfLayout {
             let mut result = layout_schema
                 .header_layout_schema
                 .instantiate(&section.data)
-                .propagate_widths()
                 .normalize(&self.doc)
                 .compute_boxes(height, &self.doc.font_dict);
 
@@ -105,7 +104,6 @@ impl PdfLayout {
                 let mut result = layout_schema
                     .item_layout_schema
                     .instantiate(&item)
-                    .propagate_widths()
                     .normalize(&self.doc)
                     .compute_boxes(height, &self.doc.font_dict);
 
@@ -174,7 +172,7 @@ impl PdfLayout {
                 (element.font.size * 2.0) as f64,
                 Mm(box_.top_left.x.into()),
                 Mm((self.doc.height
-                    - (box_.top_left.y + element.font.get_height(&self.doc.font_dict) as u32))
+                    - (box_.top_left.y + element.font.get_height(&self.doc.font_dict)))
                     .into()),
                 font_dict.get(&element.font.name).unwrap(),
             );
@@ -186,7 +184,6 @@ impl PdfLayout {
                     Mm(box_.bottom_right.x.into()),
                     Mm((self.doc.height - box_.top_left.y).into()),
                 );
-                println!("addding url: {:?}", url);
                 current_layer.add_link_annotation(LinkAnnotation::new(
                     rect,
                     Some(printpdf::BorderArray::default()),
@@ -239,8 +236,8 @@ mod tests {
 
         let pdf_layout = PdfLayout {
             doc: DocumentDefinition {
-                width: 612,
-                height: 792,
+                width: 612.0,
+                height: 792.0,
                 font_dict,
             },
         };

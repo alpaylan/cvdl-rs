@@ -37,8 +37,8 @@ pub enum ItemContent {
     Url { url: String, text: String },
 }
 
-impl ItemContent {
-    pub fn to_string(&self) -> String {
+impl ToString for ItemContent {
+    fn to_string(&self) -> String {
         match self {
             ItemContent::None => String::new(),
             ItemContent::String(s) => s.clone(),

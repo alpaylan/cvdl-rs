@@ -4,7 +4,7 @@
         "header-layout-schema": {
             "Ref": {
                 "item": "Title",
-                "width": 70,
+                "width": "70%",
                 "font": {
                     "name": "Exo-Bold",
                     "size": 14.0
@@ -24,7 +24,7 @@
                                             "name": "Exo-Bold",
                                             "size": 12.0
                                         },
-                                        "width": 70.0
+                                        "width": "70%"
                                     }
                                 },
                                 {
@@ -59,7 +59,7 @@
                                                 }
                                             }
                                         ],
-                                        "width": 30,
+                                        "width": "30%",
                                         "alignment": "Right"
                                     }
                                 }
@@ -69,7 +69,7 @@
                     {
                         "Ref": {
                             "item": "Position",
-                            "width": 70,
+                            "width": "70%",
                             "font": {
                                 "name": "Exo",
                                 "size": 12.0
@@ -79,7 +79,7 @@
                     {
                         "Ref": {
                             "item": "Text",
-                            "width": 70,
+                            "width": "70%",
                             "font": {
                                 "name": "Exo",
                                 "size": 12.0
@@ -89,7 +89,7 @@
                     {
                         "Ref": {
                             "item": "Skills",
-                            "width": 70,
+                            "width": "70%",
                             "font": {
                                 "name": "Exo",
                                 "size": 12.0
@@ -97,7 +97,7 @@
                         }
                     }
                 ],
-                "width": 100
+                "width": "100%"
             }
         }
     }

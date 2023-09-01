@@ -25,11 +25,11 @@ with your own CV.
   - [ ] Add document margin
   - [ ] Add document layout(multi-column etc)
   - [ ] Add page cut
-- [ ] Add absolute/percentage widths
+- [x] Add absolute/percentage widths
 - [ ] Add CV examples
 - [ ] Add layout examples
-- [ ] Add logging
-- [ ] Standardize u32/f64 usage. Create clear-cut domains for each.
+- [x] Add logging
+- [x] Standardize u32/f64 usage. Create clear-cut domains for each.
 - [ ] Start using data schemas
   - [ ] Add validation
   - [ ] Add serialization
@@ -44,7 +44,7 @@ with your own CV.
   - [ ] Check font licensing issues.
 - [ ] Add proper testing
   - [ ] I'm still not sure how to do this one.
-- [ ] Add URL elements
+- [x] Add URL elements
 - [ ] Abstract layout backend better.
   - [ ] Push the document-level details to `document_layout` module. Layout backends should only consume `ElementBox = SpatialBox x Element` and render that.
 - [ ] (maybe) Use some Point and Box libraries. Writing our types is okay for now but it's probably better to use something out of the box.

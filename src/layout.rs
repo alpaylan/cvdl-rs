@@ -174,19 +174,13 @@ impl Layout {
         }
     }
 
-    pub fn propagate_widths(&self) -> Layout {
-        if let Width::Fixed(w) = self.width() {
-            self.bound_width(w)
-        } else {
-            panic!("Cannot fix width of layout with non-fixed width");
-        }
-    }
-
     pub fn bound_width(&self, width: f32) -> Layout {
-        let bound = if self.width().is_fixed() && self.width().get_fixed().unwrap() <= width {
-            self.width().get_fixed().unwrap()
-        } else {
-            width
+        let bound = match self.width() {
+            Width::Absolute(w) => {
+                f32::min(w, width)
+            },
+            Width::Percentage(_) => unreachable!("Layout::bound_width: Cannot bounded width for non-unitized widths!"),
+            Width::Fill => width,
         };
 
         match self {
@@ -198,21 +192,7 @@ impl Layout {
         }
     }
 
-    pub fn is_bounded(&self) -> bool {
-        match self {
-            Layout::Stack(c) | Layout::FrozenRow(c) | Layout::FlexRow(c) => {
-                if c.width.is_fixed() {
-                    c.elements.iter().all(|e| e.is_bounded())
-                } else {
-                    false
-                }
-            }
-            Layout::Text(e) => e.width.is_fixed(),
-            Layout::Ref(_) => unreachable!("Cannot check if uninstantiated layout is bounded"),
-        }
-    }
-
-    pub fn scale_width(&self, document_width: u32) -> Layout {
+    pub fn scale_width(&self, document_width: f32) -> Layout {
         match self {
             Layout::Stack(c) => Layout::new_stack(c.scale_width(document_width)),
             Layout::FrozenRow(c) => Layout::new_frozen_row(c.scale_width(document_width)),
@@ -230,19 +210,17 @@ impl Layout {
             panic!("Cannot normalize uninstantiated layout");
         };
 
-        log::debug!("Document is instantiated. Checking if all widths are bounded...");
-
-        if !self.is_bounded() {
-            panic!("Cannot normalize unbounded layout");
-        };
-
-        log::debug!("Document is bounded. Scaling widths...");
+        log::debug!("Document is instantiated. Scaling widths...");
 
         let scaled_layout = self.scale_width(document.width);
 
-        log::debug!("Widths scaled. Filling fonts...");
+        log::debug!("Widths are scaled. Bounding widths...");
 
-        let font_filled_layout = scaled_layout.fill_fonts(&document.font_dict);
+        let bounded_layout = scaled_layout.bound_width(document.width);
+
+        log::debug!("Widths are bounded. Filling fonts...");
+
+        let font_filled_layout = bounded_layout.fill_fonts(&document.font_dict);
 
         log::debug!("Fonts filled. Breaking lines...");
 
@@ -326,11 +304,11 @@ impl Layout {
 impl Layout {
     pub fn compute_boxes(
         &self,
-        height_offset: u32,
+        height_offset: f32,
         font_dict: &FontDict,
-    ) -> (u32, Vec<(SpatialBox, Element)>) {
+    ) -> (f32, Vec<(SpatialBox, Element)>) {
         let mut textbox_positions: Vec<(SpatialBox, Element)> = Vec::new();
-        let top_left: Point = Point::new(0, height_offset);
+        let top_left: Point = Point::new(0.0, height_offset);
         let depth = self.compute_textbox_positions(&mut textbox_positions, top_left, font_dict);
 
         (depth, textbox_positions)
@@ -341,7 +319,7 @@ impl Layout {
         mut textbox_positions: &mut Vec<(SpatialBox, Element)>,
         top_left: Point,
         font_dict: &FontDict,
-    ) -> u32 {
+    ) -> f32 {
         match self {
             Layout::Stack(c) => {
                 let mut top_left = top_left;
@@ -358,13 +336,13 @@ impl Layout {
                     Alignment::Left => (top_left, 0.0),
                     Alignment::Center => (
                         top_left.move_x_by(
-                            ((c.width.get_fixed_unchecked() - c.elements_width()) / 2.0) as i32,
+                            (c.width.get_fixed_unchecked() - c.elements_width()) / 2.0,
                         ),
                         0.0,
                     ),
                     Alignment::Right => (
                         top_left
-                            .move_x_by((c.width.get_fixed_unchecked() - c.elements_width()) as i32),
+                            .move_x_by((c.width.get_fixed_unchecked() - c.elements_width())),
                         0.0,
                     ),
                     Alignment::Justified => (
@@ -381,7 +359,7 @@ impl Layout {
                     depth =
                         element.compute_textbox_positions(textbox_positions, top_left, font_dict);
                     top_left = top_left.move_x_by(
-                        element.width().get_fixed_unchecked() as i32 + per_elem_space as i32,
+                        element.width().get_fixed_unchecked() + per_elem_space,
                     );
                 }
                 depth
@@ -394,11 +372,11 @@ impl Layout {
                 let height = e.font.get_height(font_dict);
                 let textbox = SpatialBox::new(
                     top_left.clone(),
-                    top_left.move_x_by(width as i32).move_y_by(height as i32),
+                    top_left.move_x_by(width).move_y_by(height),
                 );
                 textbox_positions.push((textbox, e.clone()));
 
-                top_left.y + height as u32
+                top_left.y + height
             }
             Layout::Ref(_) => {
                 todo!("Should not be able to compute textbox positions of uninstantiated layout")

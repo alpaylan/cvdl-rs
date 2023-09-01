@@ -36,8 +36,9 @@ impl Display for Element {
         if let Some(url) = &self.url {
             s.push_str(&format!("[{}]", self.item));
             s.push_str(&format!("({})", url));
+        } else {
+            s.push_str(self.item.as_str());
         }
-        
         write!(f, "{}", s)
     }
 }
@@ -143,12 +144,12 @@ impl Element {
         }
     }
 
-    pub fn scale_width(&self, w: u32) -> Element {
+    pub fn scale_width(&self, w: f32) -> Element {
         Element {
             item: self.item.clone(),
             margin: self.margin,
             alignment: self.alignment,
-            width: self.width.scale(w as f32 / 100.0),
+            width: self.width.scale(w),
             text_width: self.text_width,
             font: self.font.clone(),
             is_fill: self.is_fill,
@@ -165,11 +166,11 @@ impl Element {
                 item: self.item.clone(),
                 margin: self.margin,
                 alignment: self.alignment,
-                width: Width::Fixed(f32::min(
+                width: Width::Absolute(f32::min(
                     self.width.get_fixed().unwrap(),
                     text_width_with_font,
                 )),
-                text_width: Width::Fixed(text_width_with_font),
+                text_width: Width::Absolute(text_width_with_font),
                 font: self.font.clone(),
                 is_fill: self.is_fill,
                 url: self.url.clone(),
@@ -181,7 +182,7 @@ impl Element {
                 margin: self.margin,
                 alignment: self.alignment,
                 width: self.width,
-                text_width: Width::Fixed(text_width_with_font),
+                text_width: Width::Absolute(text_width_with_font),
                 font: self.font.clone(),
                 is_fill: self.is_fill,
                 url: self.url.clone(),
@@ -209,7 +210,7 @@ impl Element {
             if candidate_width > self.width.get_fixed_unchecked() {
                 line.pop();
                 let line_width = self.font.get_width(&line, font_dict);
-                lines.push(self.with_item(line).with_text_width(Width::Fixed(line_width)));
+                lines.push(self.with_item(line).with_text_width(Width::Absolute(line_width)));
                 line = String::new();
             }
             
@@ -222,7 +223,7 @@ impl Element {
         line.pop();
         if line.len() > 0 {
             let line_width = self.font.get_width(&line, font_dict);
-            lines.push(self.with_item(line).with_text_width(Width::Fixed(line_width)));
+            lines.push(self.with_item(line).with_text_width(Width::Absolute(line_width)));
         }
 
         lines
@@ -234,7 +235,7 @@ impl Element {
                 item: self.item.clone(),
                 margin: self.margin,
                 alignment: self.alignment,
-                width: Width::Fixed(f32::min(self.width.get_fixed_unchecked(), width)),
+                width: Width::Absolute(f32::min(self.width.get_fixed_unchecked(), width)),
                 text_width: self.text_width,
                 font: self.font.clone(),
                 is_fill: false,
@@ -246,7 +247,7 @@ impl Element {
                 item: self.item.clone(),
                 margin: self.margin,
                 alignment: self.alignment,
-                width: Width::Fixed(width),
+                width: Width::Absolute(width),
                 text_width: self.text_width,
                 font: self.font.clone(),
                 is_fill: true,
@@ -273,7 +274,7 @@ mod tests {
             item: "hello world".to_string(),
             margin: Margin::default(),
             alignment: Alignment::default(),
-            width: Width::Fixed(100.0),
+            width: Width::Absolute(100.0),
             text_width: Width::default(),
             font: Font::default(),
             is_fill: false,
@@ -291,7 +292,7 @@ mod tests {
             item: "hello world".to_string(),
             margin: Margin::default(),
             alignment: Alignment::default(),
-            width: Width::Fixed(22.0),
+            width: Width::Absolute(22.0),
             text_width: Width::default(),
             font: Font::default(),
             is_fill: false,

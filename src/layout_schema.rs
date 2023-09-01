@@ -30,24 +30,24 @@ mod tests {
         let json = r#"{
             "Ref": {
                 "item": "Title",
-                "width": 70.0
+                "width": "70.0%"
             }
         }
         "#;
         let layout: Layout = serde_json::from_str(json).unwrap();
 
-        let actual = layout;
+        let actual = format!("{}", layout);
         let expected = expect![[r#"Ref(
     Element {
         item: "Title",
         margin: Margin {
-            top: 0,
-            bottom: 0,
-            left: 0,
-            right: 0,
+            top: 0.0,
+            bottom: 0.0,
+            left: 0.0,
+            right: 0.0,
         },
         alignment: Left,
-        width: Fixed(
+        width: Percentage(
             70.0,
         ),
         text_width: Fill,
@@ -87,25 +87,25 @@ mod tests {
                                     }
                                 }
                             ],
-                            "width": 30.0
+                            "width": "30.0%"
                         }
                     },
                     {
                         "Ref": {
                             "item": "Position",
-                            "width": 70.0
+                            "width": "70.0%"
                         }
                     },
                     {
                         "Ref": {
                             "item": "Text",
-                            "width": 70.0
+                            "width": "70.0%"
                         }
                     },
                     {
                         "Ref": {
                             "item": "Skills",
-                            "width": 70.0
+                            "width": "70.0%"
                         }
                     }
                 ]
@@ -113,7 +113,6 @@ mod tests {
         }
     "#;
         let layout: Layout = serde_json::from_str(json).unwrap();
-
         let actual = layout;
         let expected = expect![[r#"Stack(
     Container {
@@ -125,10 +124,10 @@ mod tests {
                             Element {
                                 item: "Date-Started",
                                 margin: Margin {
-                                    top: 0,
-                                    bottom: 0,
-                                    left: 0,
-                                    right: 0,
+                                    top: 0.0,
+                                    bottom: 0.0,
+                                    left: 0.0,
+                                    right: 0.0,
                                 },
                                 alignment: Left,
                                 width: Fill,
@@ -145,10 +144,10 @@ mod tests {
                             Element {
                                 item: "-",
                                 margin: Margin {
-                                    top: 0,
-                                    bottom: 0,
-                                    left: 0,
-                                    right: 0,
+                                    top: 0.0,
+                                    bottom: 0.0,
+                                    left: 0.0,
+                                    right: 0.0,
                                 },
                                 alignment: Left,
                                 width: Fill,
@@ -165,10 +164,10 @@ mod tests {
                             Element {
                                 item: "Date-Finished",
                                 margin: Margin {
-                                    top: 0,
-                                    bottom: 0,
-                                    left: 0,
-                                    right: 0,
+                                    top: 0.0,
+                                    bottom: 0.0,
+                                    left: 0.0,
+                                    right: 0.0,
                                 },
                                 alignment: Left,
                                 width: Fill,
@@ -183,13 +182,13 @@ mod tests {
                         ),
                     ],
                     margin: Margin {
-                        top: 0,
-                        bottom: 0,
-                        left: 0,
-                        right: 0,
+                        top: 0.0,
+                        bottom: 0.0,
+                        left: 0.0,
+                        right: 0.0,
                     },
                     alignment: Left,
-                    width: Fixed(
+                    width: Percentage(
                         30.0,
                     ),
                 },
@@ -198,13 +197,13 @@ mod tests {
                 Element {
                     item: "Position",
                     margin: Margin {
-                        top: 0,
-                        bottom: 0,
-                        left: 0,
-                        right: 0,
+                        top: 0.0,
+                        bottom: 0.0,
+                        left: 0.0,
+                        right: 0.0,
                     },
                     alignment: Left,
-                    width: Fixed(
+                    width: Percentage(
                         70.0,
                     ),
                     text_width: Fill,
@@ -220,13 +219,13 @@ mod tests {
                 Element {
                     item: "Text",
                     margin: Margin {
-                        top: 0,
-                        bottom: 0,
-                        left: 0,
-                        right: 0,
+                        top: 0.0,
+                        bottom: 0.0,
+                        left: 0.0,
+                        right: 0.0,
                     },
                     alignment: Left,
-                    width: Fixed(
+                    width: Percentage(
                         70.0,
                     ),
                     text_width: Fill,
@@ -242,13 +241,13 @@ mod tests {
                 Element {
                     item: "Skills",
                     margin: Margin {
-                        top: 0,
-                        bottom: 0,
-                        left: 0,
-                        right: 0,
+                        top: 0.0,
+                        bottom: 0.0,
+                        left: 0.0,
+                        right: 0.0,
                     },
                     alignment: Left,
-                    width: Fixed(
+                    width: Percentage(
                         70.0,
                     ),
                     text_width: Fill,
@@ -262,10 +261,10 @@ mod tests {
             ),
         ],
         margin: Margin {
-            top: 0,
-            bottom: 0,
-            left: 0,
-            right: 0,
+            top: 0.0,
+            bottom: 0.0,
+            left: 0.0,
+            right: 0.0,
         },
         alignment: Left,
         width: Fill,

@@ -55,8 +55,8 @@ fn main() {
 
     let pdf_layout = PdfLayout {
         doc: DocumentDefinition {
-            width: 612,
-            height: 792,
+            width: 612.0,
+            height: 792.0,
             font_dict,
         },
     };
