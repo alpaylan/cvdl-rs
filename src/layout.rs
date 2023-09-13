@@ -8,7 +8,7 @@ use crate::basic_layout::BasicLayout;
 use crate::container::Container;
 use crate::document::DocumentDefinition;
 use crate::element::Element;
-use crate::font::FontDict;
+use crate::font::{FontDict, Font};
 use crate::margin::Margin;
 use crate::point::Point;
 use crate::resume_data::ItemContent;
@@ -111,6 +111,15 @@ impl Layout {
             | Layout::FrozenRow(container)
             | Layout::FlexRow(container) => container.alignment,
             Layout::Text(element) | Layout::Ref(element) => element.alignment,
+        }
+    }
+
+    pub fn fonts(&self) -> Vec<Font> {
+        match self {
+            Layout::Stack(container)
+            | Layout::FrozenRow(container)
+            | Layout::FlexRow(container) => container.fonts(),
+            Layout::Text(element) | Layout::Ref(element) => vec![element.font.clone()],
         }
     }
 

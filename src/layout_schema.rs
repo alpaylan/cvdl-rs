@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-use crate::layout::Layout;
+use crate::{layout::Layout, font::Font};
 
 #[derive(Serialize, Deserialize)]
 pub struct LayoutSchema {
@@ -17,8 +17,15 @@ impl LayoutSchema {
         let schema: Vec<LayoutSchema> = serde_json::from_str(json).unwrap();
         schema
     }
-}
 
+    pub fn fonts(&self) -> Vec<Font> {
+        [
+            self.item_layout_schema.fonts(),
+            self.header_layout_schema.fonts(),
+        ]
+        .concat()
+    }
+}
 
 #[cfg(test)]
 mod tests {

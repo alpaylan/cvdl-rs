@@ -6,8 +6,10 @@
                 "item": "Title",
                 "width": "70%",
                 "font": {
-                    "name": "Exo-Bold",
-                    "size": 14.0
+                    "name": "Exo",
+                    "size": 14.0,
+                    "weight": "Bold",
+                    "source": "Local"
                 }
             }
         },
@@ -21,8 +23,10 @@
                                     "Ref": {
                                         "item": "Company",
                                         "font": {
-                                            "name": "Exo-Bold",
-                                            "size": 12.0
+                                            "name": "Arial",
+                                            "size": 12.0,
+                                            "weight": "Bold",
+                                            "source": "System"
                                         },
                                         "width": "70%"
                                     }
@@ -35,7 +39,8 @@
                                                     "item": "Date-Started",
                                                     "font": {
                                                         "name": "Exo",
-                                                        "size": 12.0
+                                                        "size": 12.0,
+                                                        "source": "Local"
                                                     }
 
                                                 }
@@ -45,7 +50,8 @@
                                                     "item": "-",
                                                     "font": {
                                                         "name": "Exo",
-                                                        "size": 12.0
+                                                        "size": 12.0,
+                                                        "source": "Local"
                                                     }
                                                 }
                                             },
@@ -54,7 +60,8 @@
                                                     "item": "Date-Finished",
                                                     "font": {
                                                         "name": "Exo",
-                                                        "size": 12.0
+                                                        "size": 12.0,
+                                                        "source": "Local"
                                                     }
                                                 }
                                             }
@@ -72,7 +79,8 @@
                             "width": "70%",
                             "font": {
                                 "name": "Exo",
-                                "size": 12.0
+                                "size": 12.0,
+                                "source": "Local"
                             }
                         }
                     },
@@ -82,7 +90,8 @@
                             "width": "70%",
                             "font": {
                                 "name": "Exo",
-                                "size": 12.0
+                                "size": 12.0,
+                                "source": "Local"
                             }
                         }
                     },
@@ -92,7 +101,8 @@
                             "width": "70%",
                             "font": {
                                 "name": "Exo",
-                                "size": 12.0
+                                "size": 12.0,
+                                "source": "Local"
                             }
                         }
                     }

@@ -1,5 +1,11 @@
 use std::collections::HashMap;
+use std::fs::DirEntry;
+use std::fs::FileType;
+use std::vec;
 
+use font_kit::family_handle::FamilyHandle;
+use font_kit::file_type;
+use font_kit::handle::Handle;
 use printpdf::lopdf::content::Operation;
 use printpdf::Actions;
 use printpdf::BuiltinFont;
@@ -22,6 +28,7 @@ use std::io::Error;
 use crate::data_schema::DataSchema;
 use crate::document::DocumentDefinition;
 use crate::element::Element;
+use crate::font::FontSource;
 use crate::layout_schema::LayoutSchema;
 use crate::resume_data::ResumeData;
 use crate::spatial_box::SpatialBox;
@@ -29,6 +36,8 @@ use rusttype::Font as RFont;
 
 use printpdf::lopdf::dictionary;
 use printpdf::lopdf::Object;
+
+use font_kit::source::SystemSource;
 
 pub struct PdfLayout {
     pub doc: DocumentDefinition,
@@ -47,6 +56,59 @@ impl PdfLayout {
             PdfDocument::new("PDF_Document_title", Mm(612.0), Mm(792.0), "Layer 1");
         let current_layer = doc.get_page(page1).get_layer(layer1);
 
+        let mut font_dict: HashMap<String, IndirectFontRef> = HashMap::new();
+
+        let ss = SystemSource::new();
+        let font_families = ss.all_families().unwrap();
+
+        log::info!("Discovering system fonts...");
+
+        let system_fonts: HashMap<&str, FamilyHandle> = font_families
+            .iter()
+            .map(|family_name| (family_name, ss.select_family_by_name(family_name)))
+            .filter(|item| item.1.is_ok())
+            .map(|item| (item.0.as_str(), item.1.unwrap()))
+            .collect();
+
+        log::info!("{} system fonts have been discovered!", system_fonts.len());
+
+        log::info!("Discovering locally installed fonts...");
+
+        let local_fonts: Vec<String> = fs::read_dir("assets")
+            .unwrap()
+            .into_iter()
+            .filter_map(|t| t.ok())
+            .filter(|dir_entry| dir_entry.file_type().map_or(false, |f| f.is_dir()))
+            .map(|dir_entry| dir_entry.file_name().into_string())
+            .filter_map(|t| t.ok())
+            .collect();
+
+        log::info!("{} local fonts have been discovered!", local_fonts.len());
+
+        // for family_name in ss.all_families().unwrap() {
+        //     println!("{}", family_name);
+        //     if let Ok(family) = ss.select_family_by_name(family_name.as_str()) {
+        //         let fonts = family.fonts().iter().map(|handler| {
+        //             match handler {
+        //                 Handle::Path { path, font_index } => println!("Path"),
+        //                 Handle::Memory { bytes, font_index } => println!("Memory"),
+        //             };
+        //             handler.load()
+        //         });
+        //         for font in fonts {
+        //             if let Ok(font) = font {
+        //                 let name = font.postscript_name().unwrap();
+        //                 let font = font.copy_font_data().unwrap();
+        //                 // let font = RFont::try_from_bytes(font.as_slice())
+        //                 //     .unwrap();
+        //                 // println!("{:?}", font.v_metrics_unscaled());
+        //                 let font = doc.add_external_font(font.as_slice()).unwrap();
+        //                 font_dict.insert(name, font);
+        //             }
+        //         }
+        //     }
+        // }
+
         let exo_font = doc
             .add_external_font(fs::File::open("assets/Exo/static/Exo-Medium.ttf").unwrap())
             .unwrap();
@@ -54,8 +116,6 @@ impl PdfLayout {
         let exo_bold_font = doc
             .add_external_font(fs::File::open("assets/Exo/static/Exo-Bold.ttf").unwrap())
             .unwrap();
-
-        let mut font_dict: HashMap<String, IndirectFontRef> = HashMap::new();
 
         font_dict.insert("Exo".to_string(), exo_font);
         font_dict.insert("Exo-Bold".to_string(), exo_bold_font);
@@ -95,6 +155,46 @@ impl PdfLayout {
                     .iter()
                     .find(|&s| s.schema_name == section.layout_schema)
                     .unwrap();
+
+                for font in layout_schema.fonts() {
+                    if !font_dict.contains_key(&font.full_name()) {
+                        
+                            match font.source {
+                                FontSource::Local => {
+                                    let font_ref = doc.add_external_font(
+                                        fs::File::open(format!("assets/{}/static/{}.ttf", font.name, font.full_name())).unwrap(),
+                                    ).unwrap();
+
+                                    font_dict.insert(font.full_name(),font_ref);
+                                }
+                                FontSource::System => {
+                                    log::error!("Wtf is happening");
+                                    if let Some(family) = system_fonts.get(font.name.as_str()) {
+                                        let fonts = family.fonts().iter().map(Handle::load);
+                                        for font_result in fonts {
+                                            if let Ok(font_kit_font) = font_result {
+                                                let weight = font_kit_font.properties().weight;
+                                                let style = font_kit_font.properties().style;
+                                                println!("{}-{:?}-{:?}", font_kit_font.family_name(), weight, style);
+                                                let font_kit_font = font_kit_font.copy_font_data().unwrap();
+                                                let font_ref = doc.add_external_font(font_kit_font.as_slice()).unwrap();
+                                                if font.slope
+                                            }
+                                        }
+
+                                    } else {    
+                                        log::info!("{} was not found in your system, will use the default font", font.name);
+
+                                    }   
+                                                    
+                                }
+                            }
+                            
+                        println!("Inserted");
+                    }
+                    println!("{:?}", font.full_name());
+                }
+
                 // 2. Find the data schema for the section
                 let data_schema = data_schemas
                     .iter()
@@ -173,7 +273,7 @@ impl PdfLayout {
                 Mm(box_.top_left.x.into()),
                 Mm((self.doc.height
                     - (box_.top_left.y + element.font.get_height(&self.doc.font_dict)))
-                    .into()),
+                .into()),
                 font_dict.get(&element.font.name).unwrap(),
             );
 

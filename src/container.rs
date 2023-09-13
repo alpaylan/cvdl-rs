@@ -3,7 +3,7 @@ use std::{collections::HashMap, fmt::Display};
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    alignment::Alignment, font::FontDict, layout::Layout, margin::Margin, resume_data::ItemContent,
+    alignment::Alignment, font::{FontDict, Font}, layout::Layout, margin::Margin, resume_data::ItemContent,
     width::Width,
 };
 
@@ -41,6 +41,10 @@ impl Container {
             alignment: Alignment::default(),
             width: Width::default(),
         }
+    }
+
+    pub fn fonts(&self) -> Vec<Font> {
+        self.elements.iter().flat_map(|e| e.fonts()).collect()
     }
 
     pub fn with_elements(&self, elements: Vec<Layout>) -> Container {
