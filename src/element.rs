@@ -1,9 +1,8 @@
-use std::{collections::HashMap, fmt::Display};
+use std::fmt::Display;
 
 use serde::{Deserialize, Serialize};
 
-use crate::{alignment::Alignment, font::Font, margin::Margin, width::Width};
-use rusttype::Font as RFont;
+use crate::{alignment::Alignment, font::{Font, FontDict}, margin::Margin, width::Width};
 use uuid::Uuid;
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
@@ -73,7 +72,7 @@ impl Element {
             uid: self.uid,
         }
     }
-
+    #[allow(dead_code)]
     pub fn with_margin(&self, margin: Margin) -> Element {
         Element {
             item: self.item.clone(),
@@ -87,7 +86,7 @@ impl Element {
             uid: self.uid,
         }
     }
-
+    #[allow(dead_code)]
     pub fn with_alignment(&self, alignment: Alignment) -> Element {
         Element {
             item: self.item.clone(),
@@ -101,7 +100,7 @@ impl Element {
             uid: self.uid,
         }
     }
-
+    #[allow(dead_code)]
     pub fn with_width(&self, width: Width) -> Element {
         Element {
             item: self.item.clone(),
@@ -159,7 +158,7 @@ impl Element {
         
     }
 
-    pub fn fill_fonts(&self, fonts: &HashMap<String, RFont>) -> Element {
+    pub fn fill_fonts(&self, fonts: &FontDict) -> Element {
         let text_width_with_font = self.font.get_width(&self.item, fonts);
         if self.is_fill {
             Element {
@@ -192,7 +191,7 @@ impl Element {
         
     }
 
-    pub fn break_lines(&self, font_dict: &HashMap<String, RFont>) -> Vec<Element> {
+    pub fn break_lines(&self, font_dict: &FontDict) -> Vec<Element> {
         if self.text_width.get_fixed_unchecked() <= self.width.get_fixed_unchecked() {
             return vec![self.clone()];
         }
@@ -264,10 +263,10 @@ mod tests {
 
     #[test]
     fn test_break_lines() {
-        let mut font_dict = HashMap::new();
+        let mut font_dict = FontDict::new();
         let font_data = include_bytes!("../assets/Exo/static/Exo-Medium.ttf");
         // This only succeeds if collection consists of one font
-        let _font = RFont::try_from_bytes(font_data as &[u8]).expect("Error constructing Font");
+        let _font = rusttype::Font::try_from_bytes(font_data as &[u8]).expect("Error constructing Font");
         font_dict.insert("Arial".to_string(), _font);
 
         let element = Element {

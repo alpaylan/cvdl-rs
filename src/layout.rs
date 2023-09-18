@@ -8,7 +8,8 @@ use crate::basic_layout::BasicLayout;
 use crate::container::Container;
 use crate::document::DocumentDefinition;
 use crate::element::Element;
-use crate::font::{FontDict, Font};
+
+use crate::font::{Font, FontDict};
 use crate::margin::Margin;
 use crate::point::Point;
 use crate::resume_data::ItemContent;
@@ -77,6 +78,7 @@ impl Layout {
 }
 
 impl Layout {
+    #[allow(dead_code)]
     pub fn type_(&self) -> String {
         match self {
             Layout::Stack(_) => "stack".to_string(),
@@ -95,7 +97,7 @@ impl Layout {
             Layout::Text(element) | Layout::Ref(element) => element.width,
         }
     }
-
+    #[allow(dead_code)]
     pub fn margin(&self) -> Margin {
         match self {
             Layout::Stack(container)
@@ -104,7 +106,7 @@ impl Layout {
             Layout::Text(element) | Layout::Ref(element) => element.margin,
         }
     }
-
+    #[allow(dead_code)]
     pub fn alignment(&self) -> Alignment {
         match self {
             Layout::Stack(container)
@@ -122,7 +124,7 @@ impl Layout {
             Layout::Text(element) | Layout::Ref(element) => vec![element.font.clone()],
         }
     }
-
+    #[allow(dead_code)]
     pub fn with_margin(&self, margin: Margin) -> Layout {
         match self {
             Layout::Stack(container) => Layout::new_stack(container.with_margin(margin)),
@@ -132,7 +134,7 @@ impl Layout {
             Layout::Ref(element) => Layout::new_ref(element.with_margin(margin)),
         }
     }
-
+    #[allow(dead_code)]
     pub fn with_alignment(&self, alignment: Alignment) -> Layout {
         match self {
             Layout::Stack(container) => Layout::new_stack(container.with_alignment(alignment)),
@@ -173,7 +175,7 @@ impl Layout {
         if let Some(text) = section.get(&element.item) {
             let mut element = element.with_item(text.to_string());
 
-            if let ItemContent::Url { url, text } = text {
+            if let ItemContent::Url { url, text: _ } = text {
                 element = element.with_url(url.clone())
             }
 
@@ -211,7 +213,7 @@ impl Layout {
         }
     }
 
-    pub fn normalize(&self, document: &DocumentDefinition) -> Layout {
+    pub fn normalize(&self, document: &DocumentDefinition, font_dict: &FontDict) -> Layout {
         log::debug!("Normalizing document, checking if {} is instantiated...", self);
 
         if !self.is_instantiated() {
@@ -229,11 +231,11 @@ impl Layout {
 
         log::debug!("Widths are bounded. Filling fonts...");
 
-        let font_filled_layout = bounded_layout.fill_fonts(&document.font_dict);
+        let font_filled_layout = bounded_layout.fill_fonts(font_dict);
 
         log::debug!("Fonts filled. Breaking lines...");
 
-        let broken_layout = font_filled_layout.break_lines(&document.font_dict);
+        let broken_layout = font_filled_layout.break_lines(font_dict);
 
         log::debug!("Lines broken.");
 
@@ -325,7 +327,7 @@ impl Layout {
 
     fn compute_textbox_positions(
         &self,
-        mut textbox_positions: &mut Vec<(SpatialBox, Element)>,
+        textbox_positions: &mut Vec<(SpatialBox, Element)>,
         top_left: Point,
         font_dict: &FontDict,
     ) -> f32 {
@@ -351,7 +353,7 @@ impl Layout {
                     ),
                     Alignment::Right => (
                         top_left
-                            .move_x_by((c.width.get_fixed_unchecked() - c.elements_width())),
+                            .move_x_by(c.width.get_fixed_unchecked() - c.elements_width()),
                         0.0,
                     ),
                     Alignment::Justified => (

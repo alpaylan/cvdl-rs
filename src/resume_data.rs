@@ -2,8 +2,6 @@ use serde::{Deserialize, Serialize};
 use serde_with::serde_as;
 use std::collections::HashMap;
 
-use crate::data_schema::DocumentDataType;
-
 #[derive(Serialize, Deserialize, Debug)]
 pub struct ResumeData {
     pub sections: Vec<ResumeSection>,
@@ -47,7 +45,7 @@ impl ToString for ItemContent {
                 .map(ItemContent::to_string)
                 .collect::<Vec<String>>()
                 .join(", "),
-            ItemContent::Url { url, text } => text.clone(),
+            ItemContent::Url { url: _, text } => text.clone(),
         }
     }
 }

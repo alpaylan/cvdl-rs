@@ -1,7 +1,5 @@
 use serde::{Deserialize, Serialize, de::Visitor};
 
-use crate::width;
-
 
 #[derive(Debug, Clone, Copy)]
 pub enum Width {
@@ -87,7 +85,7 @@ impl Width {
     pub fn scale(&self, total_width: f32) -> Width {
         match self {
             Width::Percentage(w) => Width::Absolute(*w / 100.0 * total_width),
-            Width::Absolute(w) => *self,
+            Width::Absolute(_) => *self,
             Width::Fill => Width::Fill,
         }
     }

@@ -6,10 +6,10 @@
                 "item": "Title",
                 "width": "70%",
                 "font": {
-                    "name": "Exo",
+                    "name": "Baskerville",
                     "size": 14.0,
                     "weight": "Bold",
-                    "source": "Local"
+                    "source": "System"
                 }
             }
         },

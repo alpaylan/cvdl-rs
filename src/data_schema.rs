@@ -18,6 +18,7 @@ pub enum DocumentDataType {
 }
 
 impl DocumentDataType {
+    #[allow(dead_code)]
     fn validate(data_type: &DocumentDataType, value: &ItemContent) -> bool {
         match value {
             ItemContent::None => unreachable!(),
@@ -38,7 +39,7 @@ impl DocumentDataType {
                     false
                 }
             }
-            ItemContent::Url { url, text } => true,
+            ItemContent::Url { url: _, text: _ } => true,
         }
     }
 }

@@ -24,7 +24,7 @@ impl Point {
             y: self.y + y,
         }
     }
-
+    #[allow(dead_code)]
     pub fn move_x_to(&self, x: f32) -> Self {
         Point { x, y: self.y }
     }

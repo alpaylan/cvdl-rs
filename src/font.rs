@@ -1,8 +1,9 @@
-use std::collections::HashMap;
+use std::{collections::HashMap, fs::File, io::Read};
 
+use font_kit::properties::{Style, Weight};
+use printpdf::IndirectFontRef;
+use rusttype::{point, Scale};
 use serde::{Deserialize, Serialize};
-
-use rusttype::{point, Font as RFont, Scale};
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Font {
@@ -12,17 +13,16 @@ pub struct Font {
     pub size: f32,
     #[serde(default = "FontWeight::default")]
     pub weight: FontWeight,
-    #[serde(default = "FontSlope::default")]
-    pub slope: FontSlope,
+    #[serde(default = "FontStyle::default")]
+    pub style: FontStyle,
     #[serde(default = "FontSource::default")]
-    pub source: FontSource
+    pub source: FontSource,
 }
-
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub enum FontSource {
     Local,
-    System
+    System,
 }
 
 impl Default for FontSource {
@@ -54,23 +54,42 @@ impl ToString for FontWeight {
     }
 }
 
+impl Into<Weight> for FontWeight {
+    fn into(self) -> Weight {
+        match self {
+            FontWeight::Light => Weight::LIGHT,
+            FontWeight::Medium => Weight::MEDIUM,
+            FontWeight::Bold => Weight::BOLD,
+        }
+    }
+}
+
 #[derive(Serialize, Deserialize, Debug, Clone)]
-pub enum FontSlope {
+pub enum FontStyle {
     Normal,
     Italic,
 }
 
-impl Default for FontSlope {
+impl Default for FontStyle {
     fn default() -> Self {
-        FontSlope::Normal
+        FontStyle::Normal
     }
 }
 
-impl ToString for FontSlope {
+impl ToString for FontStyle {
     fn to_string(&self) -> String {
         match self {
-            FontSlope::Normal => "".to_string(),
-            FontSlope::Italic => "Italic".to_string(),
+            FontStyle::Normal => "".to_string(),
+            FontStyle::Italic => "Italic".to_string(),
+        }
+    }
+}
+
+impl Into<Style> for FontStyle {
+    fn into(self) -> Style {
+        match self {
+            FontStyle::Normal => Style::Normal,
+            FontStyle::Italic => Style::Italic,
         }
     }
 }
@@ -81,8 +100,8 @@ impl Default for Font {
             name: Font::default_name(),
             size: Font::default_size(),
             weight: FontWeight::default(),
-            slope: FontSlope::default(),
-            source: FontSource::default()
+            style: FontStyle::default(),
+            source: FontSource::default(),
         }
     }
 }
@@ -97,17 +116,48 @@ impl Font {
     }
 }
 
-pub type FontDict<'a> = HashMap<String, RFont<'a>>;
+pub struct LoadedFont {
+    pub printpdf_font: IndirectFontRef,
+    pub rusttype_font: rusttype::Font<'static>,
+}
+
+pub type FontDict = HashMap<String, LoadedFont>;
+
+pub trait FontLoader {
+    fn load_from_path(&mut self, doc: &printpdf::PdfDocumentReference, name: String, path: String);
+}
+
+impl FontLoader for FontDict {
+    fn load_from_path(&mut self, doc: &printpdf::PdfDocumentReference, name: String, path: String) {
+        let mut file = File::open(path).unwrap();
+        let mut bytes = Vec::new();
+        file.read_to_end(&mut bytes).unwrap();
+
+        let rusttype_font = rusttype::Font::try_from_vec(bytes.clone()).unwrap();
+        let printpdf_font = doc.add_external_font(bytes.as_slice()).unwrap();
+        self.insert(
+            name,
+            LoadedFont {
+                printpdf_font,
+                rusttype_font,
+            },
+        );
+    }
+}
 
 impl Font {
     pub fn full_name(&self) -> String {
-        self.name.clone() + "-" + self.weight.to_string().as_str() + self.slope.to_string().as_str()
+        self.name.clone() + "-" + self.weight.to_string().as_str() + self.style.to_string().as_str()
     }
 
     pub fn get_width(&self, text: &String, font_dict: &FontDict) -> f32 {
         // The font size to use
         let scale = Scale::uniform(self.size);
-        let font = font_dict.get(&self.name).unwrap();
+        let font = &font_dict
+            .get(&self.full_name())
+            .unwrap_or_else(|| font_dict.get(&Font::default().full_name()).unwrap())
+            .rusttype_font;
+
         // The text to render
         let v_metrics = font.v_metrics(scale);
 
@@ -131,10 +181,13 @@ impl Font {
         glyphs_width
     }
 
-    pub fn get_height(&self, font_dict: &HashMap<String, RFont>) -> f32 {
+    pub fn get_height(&self, font_dict: &FontDict) -> f32 {
         // The font size to use
         let scale = Scale::uniform(self.size);
-        let font = font_dict.get(&self.name).unwrap();
+        let font = &font_dict
+            .get(&self.full_name())
+            .unwrap_or_else(|| &font_dict.get(&Font::default().full_name()).unwrap())
+            .rusttype_font;
 
         // The text to render
         let v_metrics = font.v_metrics(scale);

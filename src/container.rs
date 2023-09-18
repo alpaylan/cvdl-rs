@@ -3,7 +3,7 @@ use std::{collections::HashMap, fmt::Display};
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    alignment::Alignment, font::{FontDict, Font}, layout::Layout, margin::Margin, resume_data::ItemContent,
+    alignment::Alignment, font::{Font, FontDict}, layout::Layout, margin::Margin, resume_data::ItemContent,
     width::Width,
 };
 

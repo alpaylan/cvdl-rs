@@ -17,9 +17,7 @@ mod width;
 use std::fs;
 
 use document::DocumentDefinition;
-use font::FontDict;
 use pdf_layout::PdfLayout;
-use rusttype::Font as RFont;
 use std::path::Path;
 
 use std::env;
@@ -39,25 +37,10 @@ fn main() {
     let resume = fs::read_to_string(resume_path).unwrap();
     let resume_data = resume_data::ResumeData::from_json(&resume);
 
-    let mut font_dict = FontDict::new();
-
-    // This only succeeds if collection consists of one font
-    let _font =
-        RFont::try_from_bytes(include_bytes!("../assets/Exo/static/Exo-Medium.ttf") as &[u8])
-            .expect("Error constructing Font");
-
-    font_dict.insert("Exo".to_string(), _font);
-
-    let _font = RFont::try_from_bytes(include_bytes!("../assets/Exo/static/Exo-Bold.ttf") as &[u8])
-        .expect("Error constructing Font");
-
-    font_dict.insert("Exo-Bold".to_string(), _font);
-
     let pdf_layout = PdfLayout {
         doc: DocumentDefinition {
             width: 612.0,
             height: 792.0,
-            font_dict,
         },
     };
 

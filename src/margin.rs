@@ -20,6 +20,7 @@ impl Default for Margin {
 }
 
 impl Margin {
+    #[allow(dead_code)]
     pub fn new(top: f32, bottom: f32, left: f32, right: f32) -> Margin {
         Margin {
             top,
@@ -31,18 +32,19 @@ impl Margin {
 }
 
 impl Margin {
+    #[allow(dead_code)]
     pub fn with_top(self, top: f32) -> Margin {
         Margin { top, ..self }
     }
-
+    #[allow(dead_code)]
     pub fn with_bottom(self, bottom: f32) -> Margin {
         Margin { bottom, ..self }
     }
-
+    #[allow(dead_code)]
     pub fn with_left(self, left: f32) -> Margin {
         Margin { left, ..self }
     }
-
+    #[allow(dead_code)]
     pub fn with_right(self, right: f32) -> Margin {
         Margin { right, ..self }
     }
