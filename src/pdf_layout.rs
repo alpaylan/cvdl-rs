@@ -77,6 +77,8 @@ impl PdfLayout {
         for section in resume_data.sections {
             // Render Section Header
             // 1. Find the layout schema for the section
+            log::info!("Computing section: {}", section.name);
+
             let Some(layout_schema) = layout_schemas
                 .iter()
                 .find(|&s| s.schema_name == section.layout_schema)
@@ -128,6 +130,8 @@ impl PdfLayout {
                 boxes.append(&mut result.1);
             }
         }
+
+        log::info!("Position calculations are completed. Rendering the document...");
 
         // Render the boxes
         for element_box in boxes {
@@ -215,10 +219,13 @@ impl PdfLayout {
             }
         }
 
+        log::info!("Rendering is completed. Saving the document...");
+
         doc.save(&mut BufWriter::new(fs::File::create(filepath).unwrap()))
             .unwrap();
 
-        // fs::write(filepath, contents)
+        log::info!("Document is saved to {}", filepath.to_str().unwrap());
+
         Ok(())
     }
 

@@ -37,10 +37,10 @@ with your own CV.
   - [ ] Add product types
   - [ ] Add custom serializers
 - [ ] Add proper font support
-  - [ ] Add font-weight
-  - [ ] Add font-slope
-  - [ ] Add more font types
-  - [ ] Properly manage font assets
+  - [x] Add font-weight
+  - [x] Add font-style
+  - [x] Add more font types
+  - [x] Properly manage font assets
   - [ ] Check font licensing issues.
 - [ ] Add proper testing
   - [ ] I'm still not sure how to do this one.
