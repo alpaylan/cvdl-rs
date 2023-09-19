@@ -1,7 +1,6 @@
 use std::{collections::HashMap, fs::File, io::Read};
 
 use font_kit::properties::{Style, Weight};
-use printpdf::IndirectFontRef;
 use rusttype::{point, Scale};
 use serde::{Deserialize, Serialize};
 
@@ -116,29 +115,32 @@ impl Font {
     }
 }
 
+pub enum FontLoadSource {
+    Local(String),
+    System(font_kit::loaders::core_text::Font),
+}
 pub struct LoadedFont {
-    pub printpdf_font: IndirectFontRef,
+    pub source: FontLoadSource,
     pub rusttype_font: rusttype::Font<'static>,
 }
 
 pub type FontDict = HashMap<String, LoadedFont>;
 
 pub trait FontLoader {
-    fn load_from_path(&mut self, doc: &printpdf::PdfDocumentReference, name: String, path: String);
+    fn load_from_path(&mut self, name: String, path: String);
 }
 
 impl FontLoader for FontDict {
-    fn load_from_path(&mut self, doc: &printpdf::PdfDocumentReference, name: String, path: String) {
-        let mut file = File::open(path).unwrap();
+    fn load_from_path(&mut self, name: String, path: String) {
+        let mut file = File::open(path.clone()).unwrap();
         let mut bytes = Vec::new();
         file.read_to_end(&mut bytes).unwrap();
 
         let rusttype_font = rusttype::Font::try_from_vec(bytes.clone()).unwrap();
-        let printpdf_font = doc.add_external_font(bytes.as_slice()).unwrap();
         self.insert(
-            name,
+            name.clone(),
             LoadedFont {
-                printpdf_font,
+                source: FontLoadSource::Local(path),
                 rusttype_font,
             },
         );

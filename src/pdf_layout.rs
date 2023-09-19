@@ -1,9 +1,12 @@
+use std::borrow::BorrowMut;
+use std::collections::HashMap;
 use std::vec;
 
 use font_kit::family_name::FamilyName;
 use font_kit::properties::Properties;
 use font_kit::properties::Stretch;
 use printpdf::Color;
+use printpdf::IndirectFontRef;
 use printpdf::Line;
 use printpdf::LinkAnnotation;
 use printpdf::Mm;
@@ -23,6 +26,7 @@ use crate::document::DocumentDefinition;
 use crate::element::Element;
 use crate::font::Font;
 use crate::font::FontDict;
+use crate::font::FontLoadSource;
 use crate::font::FontLoader;
 use crate::font::FontSource;
 use crate::font::LoadedFont;
@@ -45,8 +49,12 @@ impl PdfLayout {
         filepath: &Path,
         debug: bool,
     ) -> std::io::Result<()> {
-        let (doc, page1, layer1) =
-            PdfDocument::new("PDF_Document_title", Mm(612.0), Mm(792.0), "Layer 1");
+        let (doc, page1, layer1) = PdfDocument::new(
+            "PDF_Document_title",
+            Mm(self.doc.width as f64),
+            Mm(self.doc.height as f64),
+            "Layer 1",
+        );
         let current_layer = doc.get_page(page1).get_layer(layer1);
 
         let mut font_dict: FontDict = FontDict::new();
@@ -62,7 +70,6 @@ impl PdfLayout {
 
         let local_fonts: Vec<String> = fs::read_dir("assets")
             .unwrap()
-            .into_iter()
             .filter_map(|t| t.ok())
             .filter(|dir_entry| dir_entry.file_type().map_or(false, |f| f.is_dir()))
             .map(|dir_entry| dir_entry.file_name().into_string())
@@ -105,7 +112,8 @@ impl PdfLayout {
             boxes.append(&mut result.1);
 
             // Render Section Items
-            for item in section.items {
+            for (index, item) in section.items.iter().enumerate() {
+                log::info!("Computing item {index}");
                 // 1. Find the layout schema for the section
                 let layout_schema = layout_schemas
                     .iter()
@@ -127,11 +135,34 @@ impl PdfLayout {
                     .compute_boxes(height, &font_dict);
 
                 height = result.0;
+                if height > self.doc.height {
+                    log::warn!("Page height is exceeded. Multi page documents are not yet supported. Your document will be truncated.");
+                }
                 boxes.append(&mut result.1);
             }
         }
 
         log::info!("Position calculations are completed. Rendering the document...");
+
+        let printpdf_font_dict: HashMap<String, IndirectFontRef> = font_dict
+            .borrow_mut()
+            .into_iter()
+            .map(|(k, v)| {
+                let pdf_font = match &v.source {
+                    FontLoadSource::Local(path) => {
+                        log::info!("Loading {} from {}", k, path);
+                        doc.add_external_font(fs::File::open(path).unwrap())
+                            .unwrap()
+                    }
+                    FontLoadSource::System(font) => {
+                        let font_stream = font.copy_font_data().unwrap().clone();
+                        doc.add_external_font(font_stream.as_slice()).unwrap()
+                    }
+                };
+
+                (k.clone(), pdf_font)
+            })
+            .collect();
 
         // Render the boxes
         for element_box in boxes {
@@ -196,10 +227,13 @@ impl PdfLayout {
                     (self.doc.height - (box_.top_left.y + element.font.get_height(&font_dict)))
                         .into(),
                 ),
-                &font_dict
+                &printpdf_font_dict
                     .get(&element.font.full_name())
-                    .unwrap_or_else(|| &font_dict.get(&Font::default().full_name()).unwrap())
-                    .printpdf_font,
+                    .unwrap_or_else(|| {
+                        &printpdf_font_dict
+                            .get(&Font::default().full_name())
+                            .unwrap()
+                    }),
             );
 
             if let Some(url) = element.url {
@@ -233,7 +267,6 @@ impl PdfLayout {
         match font.source {
             FontSource::Local => {
                 font_dict.load_from_path(
-                    &doc,
                     font.full_name(),
                     format!("assets/{}/static/{}.ttf", font.name, font.full_name()),
                 );
@@ -249,17 +282,18 @@ impl PdfLayout {
                 ) {
                     let font_data = best_match.load().unwrap();
                     let font_stream = font_data.copy_font_data().unwrap().clone();
-                    let printpdf_font = doc.add_external_font(font_stream.as_slice()).unwrap();
                     let rusttype_font =
                         rusttype::Font::try_from_vec((*font_stream).clone()).unwrap();
+
+                    log::info!("{} will be used in your document", font_data.full_name());
+
                     font_dict.insert(
                         font.full_name(),
                         LoadedFont {
-                            printpdf_font,
+                            source: FontLoadSource::System(font_data),
                             rusttype_font,
                         },
                     );
-                    log::info!("{} will be used in your document", font_data.full_name());
                 } else {
                     log::info!(
                         "{} was not found in your system, will use the default font",
@@ -307,27 +341,10 @@ mod tests {
 
         let mut font_dict = FontDict::new();
 
-        // This only succeeds if collection consists of one font
-        let _font =
-            RFont::try_from_bytes(include_bytes!("../assets/Exo/static/Exo-Medium.ttf") as &[u8])
-                .expect("Error constructing Font");
-
-        font_dict.insert("Exo".to_string(), _font);
-
-        let _font =
-            RFont::try_from_bytes(include_bytes!("../assets/Exo/static/Exo-Bold.ttf") as &[u8])
-                .expect("Error constructing Font");
-
-        let x = RFont::try_from_bytes(include_bytes!("../assets/Exo/static/Exo-Bold.ttf") as &[u8])
-            .expect("Error constructing Font");
-
-        x.font_dict.insert("Exo-Bold".to_string(), _font);
-
         let pdf_layout = PdfLayout {
             doc: DocumentDefinition {
                 width: 612.0,
                 height: 792.0,
-                font_dict,
             },
         };
 
