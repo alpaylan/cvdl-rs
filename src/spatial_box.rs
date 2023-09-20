@@ -36,6 +36,4 @@ impl SpatialBox {
     pub fn height(&self) -> f32 {
         self.bottom_right.y - self.top_left.y
     }
-
-
 }

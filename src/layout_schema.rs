@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-use crate::{layout::SectionLayout, font::Font};
+use crate::{font::Font, layout::SectionLayout};
 
 #[derive(Serialize, Deserialize)]
 pub struct LayoutSchema {

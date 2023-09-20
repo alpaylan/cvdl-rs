@@ -1,38 +1,28 @@
-use std::collections::HashMap;
-use std::vec;
+use std::{
+    collections::HashMap,
+    fs,
+    io::{BufWriter, Error, ErrorKind},
+    path::Path,
+    vec,
+};
 
-use font_kit::family_name::FamilyName;
-use font_kit::properties::Properties;
-use font_kit::properties::Stretch;
-use printpdf::Color;
-use printpdf::IndirectFontRef;
-use printpdf::Line;
-use printpdf::LinkAnnotation;
-use printpdf::Mm;
-use printpdf::PdfDocument;
-use printpdf::Rect;
-use printpdf::Rgb;
+use font_kit::{
+    family_name::FamilyName,
+    properties::{Properties, Stretch},
+    source::SystemSource,
+};
 
-use std::{io::ErrorKind, path::Path};
+use printpdf::{Color, IndirectFontRef, Line, LinkAnnotation, Mm, PdfDocument, Rect, Rgb};
 
-use std::fs;
-use std::io::BufWriter;
-use std::io::Error;
-
-use crate::data_schema::DataSchema;
-use crate::document::DocumentDefinition;
-use crate::element::Element;
-use crate::font::Font;
-use crate::font::FontDict;
-use crate::font::FontLoadSource;
-use crate::font::FontLoader;
-use crate::font::FontSource;
-use crate::font::LoadedFont;
-use crate::layout_schema::LayoutSchema;
-use crate::resume_data::ResumeData;
-use crate::spatial_box::SpatialBox;
-
-use font_kit::source::SystemSource;
+use crate::{
+    data_schema::DataSchema,
+    document::DocumentDefinition,
+    element::Element,
+    font::{Font, FontDict, FontLoadSource, FontLoader, FontSource, LoadedFont},
+    layout_schema::LayoutSchema,
+    resume_data::ResumeData,
+    spatial_box::SpatialBox,
+};
 
 pub struct PdfLayout {
     pub doc: DocumentDefinition,

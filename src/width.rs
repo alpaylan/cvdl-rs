@@ -1,5 +1,4 @@
-use serde::{Deserialize, Serialize, de::Visitor};
-
+use serde::{de::Visitor, Deserialize, Serialize};
 
 #[derive(Debug, Clone, Copy, Default)]
 pub enum Width {
@@ -17,13 +16,18 @@ impl<'de> Visitor<'de> for Width {
     }
 
     fn visit_str<E>(self, v: &str) -> Result<Self::Value, E>
-        where
-            E: serde::de::Error, {
+    where
+        E: serde::de::Error,
+    {
         if let Some(stripped) = v.strip_suffix('%') {
-            let w = stripped.parse::<f32>().map_err(|_| E::custom("invalid percentage"))?;
+            let w = stripped
+                .parse::<f32>()
+                .map_err(|_| E::custom("invalid percentage"))?;
             Ok(Width::Percentage(w))
-        } else if let Some(stripped) = v.strip_suffix("px")  {
-            let w = stripped.parse::<f32>().map_err(|_| E::custom("invalid pixel width"))?;
+        } else if let Some(stripped) = v.strip_suffix("px") {
+            let w = stripped
+                .parse::<f32>()
+                .map_err(|_| E::custom("invalid pixel width"))?;
             Ok(Width::Absolute(w))
         } else if v == "fill" {
             Ok(Width::Fill)
@@ -35,16 +39,18 @@ impl<'de> Visitor<'de> for Width {
 
 impl<'de> Deserialize<'de> for Width {
     fn deserialize<D>(deserializer: D) -> Result<Width, D::Error>
-        where
-            D: serde::Deserializer<'de>, {
+    where
+        D: serde::Deserializer<'de>,
+    {
         deserializer.deserialize_str(Width::Fill)
     }
 }
 
 impl Serialize for Width {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-        where
-            S: serde::Serializer, {
+    where
+        S: serde::Serializer,
+    {
         match self {
             Width::Absolute(w) => serializer.serialize_str(&format!("{}px", w)),
             Width::Percentage(w) => serializer.serialize_str(&format!("{}%", w)),
@@ -71,7 +77,6 @@ impl Width {
             Width::Fill => panic!("Width::get_fixed_unchecked() called on Width::Fill"),
         }
     }
-
 
     pub fn scale(&self, total_width: f32) -> Width {
         match self {

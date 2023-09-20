@@ -3,18 +3,19 @@ use std::fmt::Display;
 
 use serde::{Deserialize, Serialize};
 
-use crate::alignment::Alignment;
-use crate::basic_layout::BasicLayout;
-use crate::container::Container;
-use crate::document::DocumentDefinition;
-use crate::element::Element;
-
-use crate::font::{Font, FontDict};
-use crate::margin::Margin;
-use crate::point::Point;
-use crate::resume_data::ItemContent;
-use crate::spatial_box::SpatialBox;
-use crate::width::Width;
+use crate::{
+    alignment::Alignment,
+    basic_layout::BasicLayout,
+    container::Container,
+    document::DocumentDefinition,
+    element::Element,
+    font::{Font, FontDict},
+    margin::Margin,
+    point::Point,
+    resume_data::ItemContent,
+    spatial_box::SpatialBox,
+    width::Width,
+};
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub enum SectionLayout {
@@ -121,15 +122,23 @@ impl SectionLayout {
             SectionLayout::Stack(container)
             | SectionLayout::FrozenRow(container)
             | SectionLayout::FlexRow(container) => container.fonts(),
-            SectionLayout::Text(element) | SectionLayout::Ref(element) => vec![element.font.clone()],
+            SectionLayout::Text(element) | SectionLayout::Ref(element) => {
+                vec![element.font.clone()]
+            }
         }
     }
     #[allow(dead_code)]
     pub fn with_margin(&self, margin: Margin) -> SectionLayout {
         match self {
-            SectionLayout::Stack(container) => SectionLayout::new_stack(container.with_margin(margin)),
-            SectionLayout::FrozenRow(container) => SectionLayout::new_frozen_row(container.with_margin(margin)),
-            SectionLayout::FlexRow(container) => SectionLayout::new_flex_row(container.with_margin(margin)),
+            SectionLayout::Stack(container) => {
+                SectionLayout::new_stack(container.with_margin(margin))
+            }
+            SectionLayout::FrozenRow(container) => {
+                SectionLayout::new_frozen_row(container.with_margin(margin))
+            }
+            SectionLayout::FlexRow(container) => {
+                SectionLayout::new_flex_row(container.with_margin(margin))
+            }
             SectionLayout::Text(element) => SectionLayout::new_text(element.with_margin(margin)),
             SectionLayout::Ref(element) => SectionLayout::new_ref(element.with_margin(margin)),
         }
@@ -137,13 +146,21 @@ impl SectionLayout {
     #[allow(dead_code)]
     pub fn with_alignment(&self, alignment: Alignment) -> SectionLayout {
         match self {
-            SectionLayout::Stack(container) => SectionLayout::new_stack(container.with_alignment(alignment)),
+            SectionLayout::Stack(container) => {
+                SectionLayout::new_stack(container.with_alignment(alignment))
+            }
             SectionLayout::FrozenRow(container) => {
                 SectionLayout::new_frozen_row(container.with_alignment(alignment))
             }
-            SectionLayout::FlexRow(container) => SectionLayout::new_flex_row(container.with_alignment(alignment)),
-            SectionLayout::Text(element) => SectionLayout::new_text(element.with_alignment(alignment)),
-            SectionLayout::Ref(element) => SectionLayout::new_ref(element.with_alignment(alignment)),
+            SectionLayout::FlexRow(container) => {
+                SectionLayout::new_flex_row(container.with_alignment(alignment))
+            }
+            SectionLayout::Text(element) => {
+                SectionLayout::new_text(element.with_alignment(alignment))
+            }
+            SectionLayout::Ref(element) => {
+                SectionLayout::new_ref(element.with_alignment(alignment))
+            }
         }
     }
 
@@ -187,10 +204,10 @@ impl SectionLayout {
 
     pub fn bound_width(&self, width: f32) -> SectionLayout {
         let bound = match self.width() {
-            Width::Absolute(w) => {
-                f32::min(w, width)
-            },
-            Width::Percentage(_) => unreachable!("SectionLayout::bound_width: Cannot bounded width for non-unitized widths!"),
+            Width::Absolute(w) => f32::min(w, width),
+            Width::Percentage(_) => unreachable!(
+                "SectionLayout::bound_width: Cannot bounded width for non-unitized widths!"
+            ),
             Width::Fill => width,
         };
 
@@ -199,14 +216,18 @@ impl SectionLayout {
             SectionLayout::FrozenRow(c) => SectionLayout::new_frozen_row(c.bound_width(bound)),
             SectionLayout::FlexRow(c) => SectionLayout::new_flex_row(c.bound_width(bound)),
             SectionLayout::Text(e) => SectionLayout::new_text(e.bound_width(bound)),
-            SectionLayout::Ref(_) => unreachable!("Cannot propagate widths of uninstantiated layout"),
+            SectionLayout::Ref(_) => {
+                unreachable!("Cannot propagate widths of uninstantiated layout")
+            }
         }
     }
 
     pub fn scale_width(&self, document_width: f32) -> SectionLayout {
         match self {
             SectionLayout::Stack(c) => SectionLayout::new_stack(c.scale_width(document_width)),
-            SectionLayout::FrozenRow(c) => SectionLayout::new_frozen_row(c.scale_width(document_width)),
+            SectionLayout::FrozenRow(c) => {
+                SectionLayout::new_frozen_row(c.scale_width(document_width))
+            }
             SectionLayout::FlexRow(c) => SectionLayout::new_flex_row(c.scale_width(document_width)),
             SectionLayout::Text(e) => SectionLayout::new_text(e.scale_width(document_width)),
             SectionLayout::Ref(_) => unreachable!("Cannot scale width of uninstantiated layout"),
@@ -214,7 +235,10 @@ impl SectionLayout {
     }
 
     pub fn normalize(&self, document: &DocumentDefinition, font_dict: &FontDict) -> SectionLayout {
-        log::debug!("Normalizing document, checking if {} is instantiated...", self);
+        log::debug!(
+            "Normalizing document, checking if {} is instantiated...",
+            self
+        );
 
         if !self.is_instantiated() {
             log::error!("Document is not instantiated {}", self);
@@ -346,14 +370,12 @@ impl SectionLayout {
                 let (top_left, per_elem_space) = match c.alignment {
                     Alignment::Left => (top_left, 0.0),
                     Alignment::Center => (
-                        top_left.move_x_by(
-                            (c.width.get_fixed_unchecked() - c.elements_width()) / 2.0,
-                        ),
+                        top_left
+                            .move_x_by((c.width.get_fixed_unchecked() - c.elements_width()) / 2.0),
                         0.0,
                     ),
                     Alignment::Right => (
-                        top_left
-                            .move_x_by(c.width.get_fixed_unchecked() - c.elements_width()),
+                        top_left.move_x_by(c.width.get_fixed_unchecked() - c.elements_width()),
                         0.0,
                     ),
                     Alignment::Justified => (
@@ -369,9 +391,8 @@ impl SectionLayout {
                 for element in c.elements.iter() {
                     depth =
                         element.compute_textbox_positions(textbox_positions, top_left, font_dict);
-                    top_left = top_left.move_x_by(
-                        element.width().get_fixed_unchecked() + per_elem_space,
-                    );
+                    top_left =
+                        top_left.move_x_by(element.width().get_fixed_unchecked() + per_elem_space);
                 }
                 depth
             }
@@ -381,10 +402,8 @@ impl SectionLayout {
             SectionLayout::Text(e) => {
                 let width = e.text_width.get_fixed_unchecked();
                 let height = e.font.get_height(font_dict);
-                let textbox = SpatialBox::new(
-                    top_left,
-                    top_left.move_x_by(width).move_y_by(height),
-                );
+                let textbox =
+                    SpatialBox::new(top_left, top_left.move_x_by(width).move_y_by(height));
                 textbox_positions.push((textbox, e.clone()));
 
                 top_left.y + height

@@ -1,7 +1,6 @@
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 
-use crate::{element::Element, container::Container};
-
+use crate::{container::Container, element::Element};
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub enum BasicLayout {

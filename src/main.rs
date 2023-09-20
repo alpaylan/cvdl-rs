@@ -57,7 +57,7 @@ fn main() {
             resume_data,
             data_schemas,
             Path::new(results_path.as_str()),
-            debug
+            debug,
         )
         .unwrap();
 }
