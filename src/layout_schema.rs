@@ -1,15 +1,15 @@
 use serde::{Deserialize, Serialize};
 
-use crate::{layout::Layout, font::Font};
+use crate::{layout::SectionLayout, font::Font};
 
 #[derive(Serialize, Deserialize)]
 pub struct LayoutSchema {
     #[serde(rename = "schema-name")]
     pub schema_name: String,
     #[serde(rename = "header-layout-schema")]
-    pub header_layout_schema: Layout,
+    pub header_layout_schema: SectionLayout,
     #[serde(rename = "item-layout-schema")]
-    pub item_layout_schema: Layout,
+    pub item_layout_schema: SectionLayout,
 }
 
 impl LayoutSchema {
@@ -41,7 +41,7 @@ mod tests {
             }
         }
         "#;
-        let layout: Layout = serde_json::from_str(json).unwrap();
+        let layout: SectionLayout = serde_json::from_str(json).unwrap();
 
         let actual = format!("{}", layout);
         let expected = expect![[r#"Ref(
@@ -119,7 +119,7 @@ mod tests {
             }
         }
     "#;
-        let layout: Layout = serde_json::from_str(json).unwrap();
+        let layout: SectionLayout = serde_json::from_str(json).unwrap();
         let actual = layout;
         let expected = expect![[r#"Stack(
     Container {

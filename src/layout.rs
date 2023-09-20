@@ -17,7 +17,7 @@ use crate::spatial_box::SpatialBox;
 use crate::width::Width;
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
-pub enum Layout {
+pub enum SectionLayout {
     Stack(Container),
     FrozenRow(Container),
     FlexRow(Container),
@@ -26,152 +26,152 @@ pub enum Layout {
 }
 
 // todo: use this
-impl Into<BasicLayout> for Layout {
-    fn into(self) -> BasicLayout {
-        match self {
-            Layout::Stack(_container) => todo!(),
-            Layout::FrozenRow(_) => unreachable!("FrozenRow should be converted to FlexRow"),
-            Layout::FlexRow(_container) => todo!(),
-            Layout::Text(_element) => todo!(),
-            Layout::Ref(_) => unreachable!("Ref should be converted to Text"),
+impl From<SectionLayout> for BasicLayout {
+    fn from(value: SectionLayout) -> Self {
+        match value {
+            SectionLayout::Stack(_container) => todo!(),
+            SectionLayout::FrozenRow(_) => unreachable!("FrozenRow should be converted to FlexRow"),
+            SectionLayout::FlexRow(_container) => todo!(),
+            SectionLayout::Text(_element) => todo!(),
+            SectionLayout::Ref(_) => unreachable!("Ref should be converted to Text"),
         }
     }
 }
 
-impl Display for Layout {
+impl Display for SectionLayout {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Layout::Stack(container) => write!(f, "{}", container),
-            Layout::FrozenRow(container) => write!(f, "{}", container),
-            Layout::FlexRow(container) => write!(f, "{}", container),
-            Layout::Text(element) => write!(f, "{}", element),
-            Layout::Ref(element) => write!(f, "{}", element),
+            SectionLayout::Stack(container) => write!(f, "{}", container),
+            SectionLayout::FrozenRow(container) => write!(f, "{}", container),
+            SectionLayout::FlexRow(container) => write!(f, "{}", container),
+            SectionLayout::Text(element) => write!(f, "{}", element),
+            SectionLayout::Ref(element) => write!(f, "{}", element),
         }
     }
 }
 
-impl Layout {
-    pub fn new_stack(container: Container) -> Layout {
+impl SectionLayout {
+    pub fn new_stack(container: Container) -> SectionLayout {
         log::debug!("Creating new stack: {}", container.uid);
-        Layout::Stack(container)
+        SectionLayout::Stack(container)
     }
 
-    pub fn new_frozen_row(container: Container) -> Layout {
+    pub fn new_frozen_row(container: Container) -> SectionLayout {
         log::debug!("Creating new frozen row: {}", container.uid);
-        Layout::FrozenRow(container)
+        SectionLayout::FrozenRow(container)
     }
 
-    pub fn new_flex_row(container: Container) -> Layout {
+    pub fn new_flex_row(container: Container) -> SectionLayout {
         log::debug!("Creating new flex row: {}", container.uid);
-        Layout::FlexRow(container)
+        SectionLayout::FlexRow(container)
     }
 
-    pub fn new_text(element: Element) -> Layout {
+    pub fn new_text(element: Element) -> SectionLayout {
         log::debug!("Creating new text element: {}", element.uid);
-        Layout::Text(element)
+        SectionLayout::Text(element)
     }
 
-    pub fn new_ref(element: Element) -> Layout {
+    pub fn new_ref(element: Element) -> SectionLayout {
         log::debug!("Creating new ref element: {}", element.uid);
-        Layout::Ref(element)
+        SectionLayout::Ref(element)
     }
 }
 
-impl Layout {
+impl SectionLayout {
     #[allow(dead_code)]
     pub fn type_(&self) -> String {
         match self {
-            Layout::Stack(_) => "stack".to_string(),
-            Layout::FrozenRow(_) => "frozen_row".to_string(),
-            Layout::FlexRow(_) => "flex_row".to_string(),
-            Layout::Text(_) => "text".to_string(),
-            Layout::Ref(_) => "ref".to_string(),
+            SectionLayout::Stack(_) => "stack".to_string(),
+            SectionLayout::FrozenRow(_) => "frozen_row".to_string(),
+            SectionLayout::FlexRow(_) => "flex_row".to_string(),
+            SectionLayout::Text(_) => "text".to_string(),
+            SectionLayout::Ref(_) => "ref".to_string(),
         }
     }
 
     pub fn width(&self) -> Width {
         match self {
-            Layout::Stack(container)
-            | Layout::FrozenRow(container)
-            | Layout::FlexRow(container) => container.width,
-            Layout::Text(element) | Layout::Ref(element) => element.width,
+            SectionLayout::Stack(container)
+            | SectionLayout::FrozenRow(container)
+            | SectionLayout::FlexRow(container) => container.width,
+            SectionLayout::Text(element) | SectionLayout::Ref(element) => element.width,
         }
     }
     #[allow(dead_code)]
     pub fn margin(&self) -> Margin {
         match self {
-            Layout::Stack(container)
-            | Layout::FrozenRow(container)
-            | Layout::FlexRow(container) => container.margin,
-            Layout::Text(element) | Layout::Ref(element) => element.margin,
+            SectionLayout::Stack(container)
+            | SectionLayout::FrozenRow(container)
+            | SectionLayout::FlexRow(container) => container.margin,
+            SectionLayout::Text(element) | SectionLayout::Ref(element) => element.margin,
         }
     }
     #[allow(dead_code)]
     pub fn alignment(&self) -> Alignment {
         match self {
-            Layout::Stack(container)
-            | Layout::FrozenRow(container)
-            | Layout::FlexRow(container) => container.alignment,
-            Layout::Text(element) | Layout::Ref(element) => element.alignment,
+            SectionLayout::Stack(container)
+            | SectionLayout::FrozenRow(container)
+            | SectionLayout::FlexRow(container) => container.alignment,
+            SectionLayout::Text(element) | SectionLayout::Ref(element) => element.alignment,
         }
     }
 
     pub fn fonts(&self) -> Vec<Font> {
         match self {
-            Layout::Stack(container)
-            | Layout::FrozenRow(container)
-            | Layout::FlexRow(container) => container.fonts(),
-            Layout::Text(element) | Layout::Ref(element) => vec![element.font.clone()],
+            SectionLayout::Stack(container)
+            | SectionLayout::FrozenRow(container)
+            | SectionLayout::FlexRow(container) => container.fonts(),
+            SectionLayout::Text(element) | SectionLayout::Ref(element) => vec![element.font.clone()],
         }
     }
     #[allow(dead_code)]
-    pub fn with_margin(&self, margin: Margin) -> Layout {
+    pub fn with_margin(&self, margin: Margin) -> SectionLayout {
         match self {
-            Layout::Stack(container) => Layout::new_stack(container.with_margin(margin)),
-            Layout::FrozenRow(container) => Layout::new_frozen_row(container.with_margin(margin)),
-            Layout::FlexRow(container) => Layout::new_flex_row(container.with_margin(margin)),
-            Layout::Text(element) => Layout::new_text(element.with_margin(margin)),
-            Layout::Ref(element) => Layout::new_ref(element.with_margin(margin)),
+            SectionLayout::Stack(container) => SectionLayout::new_stack(container.with_margin(margin)),
+            SectionLayout::FrozenRow(container) => SectionLayout::new_frozen_row(container.with_margin(margin)),
+            SectionLayout::FlexRow(container) => SectionLayout::new_flex_row(container.with_margin(margin)),
+            SectionLayout::Text(element) => SectionLayout::new_text(element.with_margin(margin)),
+            SectionLayout::Ref(element) => SectionLayout::new_ref(element.with_margin(margin)),
         }
     }
     #[allow(dead_code)]
-    pub fn with_alignment(&self, alignment: Alignment) -> Layout {
+    pub fn with_alignment(&self, alignment: Alignment) -> SectionLayout {
         match self {
-            Layout::Stack(container) => Layout::new_stack(container.with_alignment(alignment)),
-            Layout::FrozenRow(container) => {
-                Layout::new_frozen_row(container.with_alignment(alignment))
+            SectionLayout::Stack(container) => SectionLayout::new_stack(container.with_alignment(alignment)),
+            SectionLayout::FrozenRow(container) => {
+                SectionLayout::new_frozen_row(container.with_alignment(alignment))
             }
-            Layout::FlexRow(container) => Layout::new_flex_row(container.with_alignment(alignment)),
-            Layout::Text(element) => Layout::new_text(element.with_alignment(alignment)),
-            Layout::Ref(element) => Layout::new_ref(element.with_alignment(alignment)),
+            SectionLayout::FlexRow(container) => SectionLayout::new_flex_row(container.with_alignment(alignment)),
+            SectionLayout::Text(element) => SectionLayout::new_text(element.with_alignment(alignment)),
+            SectionLayout::Ref(element) => SectionLayout::new_ref(element.with_alignment(alignment)),
         }
     }
 
     pub fn is_instantiated(&self) -> bool {
         log::debug!("Checking if {} is instantiated...", self);
         match self {
-            Layout::Stack(c) | Layout::FrozenRow(c) | Layout::FlexRow(c) => {
+            SectionLayout::Stack(c) | SectionLayout::FrozenRow(c) | SectionLayout::FlexRow(c) => {
                 c.elements.iter().all(|e| e.is_instantiated())
             }
-            Layout::Text(_) => true,
-            Layout::Ref(_) => false,
+            SectionLayout::Text(_) => true,
+            SectionLayout::Ref(_) => false,
         }
     }
 
-    pub fn instantiate(&self, section: &HashMap<String, ItemContent>) -> Layout {
+    pub fn instantiate(&self, section: &HashMap<String, ItemContent>) -> SectionLayout {
         match self {
-            Layout::Stack(c) => Layout::new_stack(c.instantiate(section)),
-            Layout::FrozenRow(c) => Layout::new_frozen_row(c.instantiate(section)),
-            Layout::FlexRow(c) => Layout::new_flex_row(c.instantiate(section)),
-            Layout::Text(e) => Layout::new_text(e.clone()),
-            Layout::Ref(e) => Layout::instantiate_ref_element(e.clone(), section),
+            SectionLayout::Stack(c) => SectionLayout::new_stack(c.instantiate(section)),
+            SectionLayout::FrozenRow(c) => SectionLayout::new_frozen_row(c.instantiate(section)),
+            SectionLayout::FlexRow(c) => SectionLayout::new_flex_row(c.instantiate(section)),
+            SectionLayout::Text(e) => SectionLayout::new_text(e.clone()),
+            SectionLayout::Ref(e) => SectionLayout::instantiate_ref_element(e.clone(), section),
         }
     }
 
     pub fn instantiate_ref_element(
         element: Element,
         section: &HashMap<String, ItemContent>,
-    ) -> Layout {
+    ) -> SectionLayout {
         if let Some(text) = section.get(&element.item) {
             let mut element = element.with_item(text.to_string());
 
@@ -179,41 +179,41 @@ impl Layout {
                 element = element.with_url(url.clone())
             }
 
-            Layout::Text(element)
+            SectionLayout::Text(element)
         } else {
-            Layout::Stack(Container::empty_container())
+            SectionLayout::Stack(Container::empty_container())
         }
     }
 
-    pub fn bound_width(&self, width: f32) -> Layout {
+    pub fn bound_width(&self, width: f32) -> SectionLayout {
         let bound = match self.width() {
             Width::Absolute(w) => {
                 f32::min(w, width)
             },
-            Width::Percentage(_) => unreachable!("Layout::bound_width: Cannot bounded width for non-unitized widths!"),
+            Width::Percentage(_) => unreachable!("SectionLayout::bound_width: Cannot bounded width for non-unitized widths!"),
             Width::Fill => width,
         };
 
         match self {
-            Layout::Stack(c) => Layout::new_stack(c.bound_width(bound)),
-            Layout::FrozenRow(c) => Layout::new_frozen_row(c.bound_width(bound)),
-            Layout::FlexRow(c) => Layout::new_flex_row(c.bound_width(bound)),
-            Layout::Text(e) => Layout::new_text(e.bound_width(bound)),
-            Layout::Ref(_) => unreachable!("Cannot propagate widths of uninstantiated layout"),
+            SectionLayout::Stack(c) => SectionLayout::new_stack(c.bound_width(bound)),
+            SectionLayout::FrozenRow(c) => SectionLayout::new_frozen_row(c.bound_width(bound)),
+            SectionLayout::FlexRow(c) => SectionLayout::new_flex_row(c.bound_width(bound)),
+            SectionLayout::Text(e) => SectionLayout::new_text(e.bound_width(bound)),
+            SectionLayout::Ref(_) => unreachable!("Cannot propagate widths of uninstantiated layout"),
         }
     }
 
-    pub fn scale_width(&self, document_width: f32) -> Layout {
+    pub fn scale_width(&self, document_width: f32) -> SectionLayout {
         match self {
-            Layout::Stack(c) => Layout::new_stack(c.scale_width(document_width)),
-            Layout::FrozenRow(c) => Layout::new_frozen_row(c.scale_width(document_width)),
-            Layout::FlexRow(c) => Layout::new_flex_row(c.scale_width(document_width)),
-            Layout::Text(e) => Layout::new_text(e.scale_width(document_width)),
-            Layout::Ref(_) => unreachable!("Cannot scale width of uninstantiated layout"),
+            SectionLayout::Stack(c) => SectionLayout::new_stack(c.scale_width(document_width)),
+            SectionLayout::FrozenRow(c) => SectionLayout::new_frozen_row(c.scale_width(document_width)),
+            SectionLayout::FlexRow(c) => SectionLayout::new_flex_row(c.scale_width(document_width)),
+            SectionLayout::Text(e) => SectionLayout::new_text(e.scale_width(document_width)),
+            SectionLayout::Ref(_) => unreachable!("Cannot scale width of uninstantiated layout"),
         }
     }
 
-    pub fn normalize(&self, document: &DocumentDefinition, font_dict: &FontDict) -> Layout {
+    pub fn normalize(&self, document: &DocumentDefinition, font_dict: &FontDict) -> SectionLayout {
         log::debug!("Normalizing document, checking if {} is instantiated...", self);
 
         if !self.is_instantiated() {
@@ -242,20 +242,20 @@ impl Layout {
         broken_layout
     }
 
-    pub fn fill_fonts(&self, font_dict: &FontDict) -> Layout {
+    pub fn fill_fonts(&self, font_dict: &FontDict) -> SectionLayout {
         match self {
-            Layout::Stack(c) => Layout::new_stack(c.fill_fonts(font_dict)),
-            Layout::FrozenRow(c) => Layout::new_frozen_row(c.fill_fonts(font_dict)),
-            Layout::FlexRow(c) => Layout::new_flex_row(c.fill_fonts(font_dict)),
-            Layout::Text(e) => Layout::new_text(e.fill_fonts(font_dict)),
-            Layout::Ref(_) => unreachable!("Cannot fill fonts of uninstantiated layout"),
+            SectionLayout::Stack(c) => SectionLayout::new_stack(c.fill_fonts(font_dict)),
+            SectionLayout::FrozenRow(c) => SectionLayout::new_frozen_row(c.fill_fonts(font_dict)),
+            SectionLayout::FlexRow(c) => SectionLayout::new_flex_row(c.fill_fonts(font_dict)),
+            SectionLayout::Text(e) => SectionLayout::new_text(e.fill_fonts(font_dict)),
+            SectionLayout::Ref(_) => unreachable!("Cannot fill fonts of uninstantiated layout"),
         }
     }
 
-    pub fn break_lines(&self, font_dict: &FontDict) -> Layout {
+    pub fn break_lines(&self, font_dict: &FontDict) -> SectionLayout {
         match self {
-            Layout::Stack(c) => {
-                let new_stack = Layout::new_stack(
+            SectionLayout::Stack(c) => {
+                let new_stack = SectionLayout::new_stack(
                     c.with_elements(
                         c.elements
                             .iter()
@@ -265,7 +265,7 @@ impl Layout {
                 );
                 new_stack
             }
-            Layout::FrozenRow(c) => {
+            SectionLayout::FrozenRow(c) => {
                 let total_width = c
                     .elements
                     .iter()
@@ -278,7 +278,7 @@ impl Layout {
                         total_width
                     );
                 } else {
-                    Layout::new_flex_row(Container {
+                    SectionLayout::new_flex_row(Container {
                         uid: c.uid,
                         elements: c
                             .elements
@@ -291,28 +291,28 @@ impl Layout {
                     })
                 }
             }
-            Layout::FlexRow(c) => {
+            SectionLayout::FlexRow(c) => {
                 let lines: Vec<Container> = c.break_lines(font_dict);
-                Layout::new_stack(
-                    c.with_elements(lines.into_iter().map(|c| Layout::FlexRow(c)).collect()),
+                SectionLayout::new_stack(
+                    c.with_elements(lines.into_iter().map(SectionLayout::FlexRow).collect()),
                 )
             }
-            Layout::Text(e) => {
+            SectionLayout::Text(e) => {
                 let lines: Vec<Element> = e.break_lines(font_dict);
-                Layout::new_stack(
+                SectionLayout::new_stack(
                     Container::empty_container()
-                        .with_elements(lines.into_iter().map(|e| Layout::new_text(e)).collect())
+                        .with_elements(lines.into_iter().map(SectionLayout::new_text).collect())
                         .with_alignment(e.alignment)
                         .with_margin(e.margin)
                         .with_width(e.width),
                 )
             }
-            Layout::Ref(_) => unreachable!("Cannot break lines of uninstantiated layout"),
+            SectionLayout::Ref(_) => unreachable!("Cannot break lines of uninstantiated layout"),
         }
     }
 }
 
-impl Layout {
+impl SectionLayout {
     pub fn compute_boxes(
         &self,
         height_offset: f32,
@@ -332,7 +332,7 @@ impl Layout {
         font_dict: &FontDict,
     ) -> f32 {
         match self {
-            Layout::Stack(c) => {
+            SectionLayout::Stack(c) => {
                 let mut top_left = top_left;
                 let mut depth = top_left.y;
                 for element in c.elements.iter() {
@@ -342,7 +342,7 @@ impl Layout {
                 }
                 depth
             }
-            Layout::FlexRow(c) => {
+            SectionLayout::FlexRow(c) => {
                 let (top_left, per_elem_space) = match c.alignment {
                     Alignment::Left => (top_left, 0.0),
                     Alignment::Center => (
@@ -375,21 +375,21 @@ impl Layout {
                 }
                 depth
             }
-            Layout::FrozenRow(_) => {
+            SectionLayout::FrozenRow(_) => {
                 unreachable!("Cannot compute textbox positions of frozen row: {:?}", self)
             }
-            Layout::Text(e) => {
+            SectionLayout::Text(e) => {
                 let width = e.text_width.get_fixed_unchecked();
                 let height = e.font.get_height(font_dict);
                 let textbox = SpatialBox::new(
-                    top_left.clone(),
+                    top_left,
                     top_left.move_x_by(width).move_y_by(height),
                 );
                 textbox_positions.push((textbox, e.clone()));
 
                 top_left.y + height
             }
-            Layout::Ref(_) => {
+            SectionLayout::Ref(_) => {
                 todo!("Should not be able to compute textbox positions of uninstantiated layout")
             }
         }

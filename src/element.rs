@@ -220,7 +220,7 @@ impl Element {
         
 
         line.pop();
-        if line.len() > 0 {
+        if !line.is_empty() {
             let line_width = self.font.get_width(&line, font_dict);
             lines.push(self.with_item(line).with_text_width(Width::Absolute(line_width)));
         }

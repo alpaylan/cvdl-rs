@@ -1,10 +1,11 @@
 use serde::{Deserialize, Serialize, de::Visitor};
 
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, Default)]
 pub enum Width {
     Absolute(f32),
     Percentage(f32),
+    #[default]
     Fill,
 }
 
@@ -18,11 +19,11 @@ impl<'de> Visitor<'de> for Width {
     fn visit_str<E>(self, v: &str) -> Result<Self::Value, E>
         where
             E: serde::de::Error, {
-        if v.ends_with('%') {
-            let w = v[..v.len() - 1].parse::<f32>().map_err(|_| E::custom("invalid percentage"))?;
+        if let Some(stripped) = v.strip_suffix('%') {
+            let w = stripped.parse::<f32>().map_err(|_| E::custom("invalid percentage"))?;
             Ok(Width::Percentage(w))
-        } else if v.ends_with("px") {
-            let w = v[..v.len() - 2].parse::<f32>().map_err(|_| E::custom("invalid pixel width"))?;
+        } else if let Some(stripped) = v.strip_suffix("px")  {
+            let w = stripped.parse::<f32>().map_err(|_| E::custom("invalid pixel width"))?;
             Ok(Width::Absolute(w))
         } else if v == "fill" {
             Ok(Width::Fill)
@@ -52,19 +53,9 @@ impl Serialize for Width {
     }
 }
 
-
-impl Default for Width {
-    fn default() -> Self {
-        return Width::Fill;
-    }
-}
-
 impl Width {
     pub fn is_fixed(&self) -> bool {
-        match self {
-            Width::Fill => false,
-            _ => true,
-        }
+        !matches!(self, Width::Fill)
     }
 
     pub fn get_fixed(&self) -> Option<f32> {

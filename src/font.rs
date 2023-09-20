@@ -18,29 +18,19 @@ pub struct Font {
     pub source: FontSource,
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone)]
+#[derive(Serialize, Deserialize, Debug, Clone, Default)]
 pub enum FontSource {
     Local,
+    #[default]
     System,
 }
 
-impl Default for FontSource {
-    fn default() -> Self {
-        FontSource::System
-    }
-}
-
-#[derive(Serialize, Deserialize, Debug, Clone)]
+#[derive(Serialize, Deserialize, Debug, Clone, Default)]
 pub enum FontWeight {
     Light,
+    #[default]
     Medium,
     Bold,
-}
-
-impl Default for FontWeight {
-    fn default() -> Self {
-        FontWeight::Medium
-    }
 }
 
 impl ToString for FontWeight {
@@ -53,9 +43,9 @@ impl ToString for FontWeight {
     }
 }
 
-impl Into<Weight> for FontWeight {
-    fn into(self) -> Weight {
-        match self {
+impl From<FontWeight> for Weight {
+    fn from(val: FontWeight) -> Self {
+        match val {
             FontWeight::Light => Weight::LIGHT,
             FontWeight::Medium => Weight::MEDIUM,
             FontWeight::Bold => Weight::BOLD,
@@ -63,16 +53,11 @@ impl Into<Weight> for FontWeight {
     }
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone)]
+#[derive(Serialize, Deserialize, Debug, Clone, Default)]
 pub enum FontStyle {
+    #[default]
     Normal,
     Italic,
-}
-
-impl Default for FontStyle {
-    fn default() -> Self {
-        FontStyle::Normal
-    }
 }
 
 impl ToString for FontStyle {
@@ -84,9 +69,9 @@ impl ToString for FontStyle {
     }
 }
 
-impl Into<Style> for FontStyle {
-    fn into(self) -> Style {
-        match self {
+impl From<FontStyle> for Style {
+    fn from(val: FontStyle) -> Self {
+        match val {
             FontStyle::Normal => Style::Normal,
             FontStyle::Italic => Style::Italic,
         }
@@ -138,7 +123,7 @@ impl FontLoader for FontDict {
 
         let rusttype_font = rusttype::Font::try_from_vec(bytes.clone()).unwrap();
         self.insert(
-            name.clone(),
+            name,
             LoadedFont {
                 source: FontLoadSource::Local(path),
                 rusttype_font,
@@ -152,7 +137,7 @@ impl Font {
         self.name.clone() + "-" + self.weight.to_string().as_str() + self.style.to_string().as_str()
     }
 
-    pub fn get_width(&self, text: &String, font_dict: &FontDict) -> f32 {
+    pub fn get_width(&self, text: &str, font_dict: &FontDict) -> f32 {
         // The font size to use
         let scale = Scale::uniform(self.size);
         let font = &font_dict
@@ -188,15 +173,13 @@ impl Font {
         let scale = Scale::uniform(self.size);
         let font = &font_dict
             .get(&self.full_name())
-            .unwrap_or_else(|| &font_dict.get(&Font::default().full_name()).unwrap())
+            .unwrap_or_else(|| font_dict.get(&Font::default().full_name()).unwrap())
             .rusttype_font;
 
         // The text to render
         let v_metrics = font.v_metrics(scale);
 
         // work out the layout size
-        let glyphs_height = v_metrics.ascent - v_metrics.descent;
-
-        glyphs_height
+        v_metrics.ascent - v_metrics.descent
     }
 }

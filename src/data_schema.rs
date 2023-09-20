@@ -1,7 +1,6 @@
 use std::str::FromStr;
 
 use serde::{Deserialize, Serialize};
-use serde_json;
 use serde_with::{serde_as, DisplayFromStr};
 
 use crate::resume_data::ItemContent;
@@ -72,8 +71,8 @@ impl FromStr for DocumentDataType {
             "String" => DocumentDataType::String,
             "MarkdownString" => DocumentDataType::MarkdownString,
             _ => {
-                if s.contains("|") {
-                    let types: Vec<&str> = s.split("|").collect();
+                if s.contains('|') {
+                    let types: Vec<&str> = s.split('|').collect();
                     let mut data_types: Vec<DocumentDataType> = Vec::new();
                     for t in types {
                         data_types.push(DocumentDataType::from_str(t.trim())?);

@@ -3,7 +3,7 @@ use std::{collections::HashMap, fmt::Display};
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    alignment::Alignment, font::{Font, FontDict}, layout::Layout, margin::Margin, resume_data::ItemContent,
+    alignment::Alignment, font::{Font, FontDict}, layout::SectionLayout, margin::Margin, resume_data::ItemContent,
     width::Width,
 };
 
@@ -14,7 +14,7 @@ pub struct Container {
     #[serde(skip)]
     #[serde(default = "Uuid::new_v4")]
     pub uid: uuid::Uuid,
-    pub elements: Vec<Layout>,
+    pub elements: Vec<SectionLayout>,
     #[serde(default = "Margin::default")]
     pub margin: Margin,
     #[serde(default = "Alignment::default")]
@@ -47,7 +47,7 @@ impl Container {
         self.elements.iter().flat_map(|e| e.fonts()).collect()
     }
 
-    pub fn with_elements(&self, elements: Vec<Layout>) -> Container {
+    pub fn with_elements(&self, elements: Vec<SectionLayout>) -> Container {
         Container {
             uid: self.uid,
             elements,
@@ -105,7 +105,7 @@ impl Container {
             Width::Absolute(w) => {
                 f32::min(w, width)
             },
-            Width::Percentage(_) => unreachable!("Layout::bound_width: Cannot bounded width for non-unitized widths!"),
+            Width::Percentage(_) => unreachable!("SectionLayout::bound_width: Cannot bounded width for non-unitized widths!"),
             Width::Fill => width,
         };
 
@@ -141,9 +141,9 @@ impl Container {
     pub fn break_lines(&self, font_dict: &FontDict) -> Vec<Container> {
         
         let mut lines: Vec<Container> = vec![];
-        let mut current_line: Vec<Layout> = vec![];
+        let mut current_line: Vec<SectionLayout> = vec![];
         let mut current_width = 0.0;
-        let elements: Vec<Layout> = self.elements.iter().map(|e| e.break_lines(font_dict)).collect();
+        let elements: Vec<SectionLayout> = self.elements.iter().map(|e| e.break_lines(font_dict)).collect();
 
         for element in elements {
             let element_width = element.width().get_fixed_unchecked();

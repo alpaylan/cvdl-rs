@@ -1,4 +1,3 @@
-use std::borrow::BorrowMut;
 use std::collections::HashMap;
 use std::vec;
 
@@ -16,7 +15,6 @@ use printpdf::Rgb;
 
 use std::{io::ErrorKind, path::Path};
 
-use printpdf;
 use std::fs;
 use std::io::BufWriter;
 use std::io::Error;
@@ -90,10 +88,10 @@ impl PdfLayout {
                 .iter()
                 .find(|&s| s.schema_name == section.layout_schema)
             else {
-                return Err(Error::new(ErrorKind::Other, format!("Layout not found for {}", section.layout_schema)));
+                return Err(Error::new(ErrorKind::Other, format!("SectionLayout not found for {}", section.layout_schema)));
             };
 
-            PdfLayout::load_fonts(layout_schema, &doc, &mut font_dict);
+            PdfLayout::load_fonts(layout_schema, &mut font_dict);
 
             // 2. Find the data schema for the section
             let _data_schema = data_schemas
@@ -120,7 +118,7 @@ impl PdfLayout {
                     .find(|&s| s.schema_name == section.layout_schema)
                     .unwrap();
 
-                PdfLayout::load_fonts(layout_schema, &doc, &mut font_dict);
+                PdfLayout::load_fonts(layout_schema, &mut font_dict);
 
                 // 2. Find the data schema for the section
                 let _data_schema = data_schemas
@@ -130,7 +128,7 @@ impl PdfLayout {
                 // 3. Render the item
                 let mut result = layout_schema
                     .item_layout_schema
-                    .instantiate(&item)
+                    .instantiate(item)
                     .normalize(&self.doc, &font_dict)
                     .compute_boxes(height, &font_dict);
 
@@ -145,8 +143,7 @@ impl PdfLayout {
         log::info!("Position calculations are completed. Rendering the document...");
 
         let printpdf_font_dict: HashMap<String, IndirectFontRef> = font_dict
-            .borrow_mut()
-            .into_iter()
+            .iter_mut()
             .map(|(k, v)| {
                 let pdf_font = match &v.source {
                     FontLoadSource::Local(path) => {
@@ -155,7 +152,7 @@ impl PdfLayout {
                             .unwrap()
                     }
                     FontLoadSource::System(font) => {
-                        let font_stream = font.copy_font_data().unwrap().clone();
+                        let font_stream = font.copy_font_data().unwrap();
                         doc.add_external_font(font_stream.as_slice()).unwrap()
                     }
                 };
@@ -208,7 +205,7 @@ impl PdfLayout {
                     ),
                 ];
                 let line1 = Line {
-                    points: points,
+                    points,
                     is_closed: true,
                     has_fill: false,
                     has_stroke: true,
@@ -227,10 +224,10 @@ impl PdfLayout {
                     (self.doc.height - (box_.top_left.y + element.font.get_height(&font_dict)))
                         .into(),
                 ),
-                &printpdf_font_dict
+                printpdf_font_dict
                     .get(&element.font.full_name())
                     .unwrap_or_else(|| {
-                        &printpdf_font_dict
+                        printpdf_font_dict
                             .get(&Font::default().full_name())
                             .unwrap()
                     }),
@@ -263,7 +260,7 @@ impl PdfLayout {
         Ok(())
     }
 
-    pub fn load_font(font: &Font, doc: &printpdf::PdfDocumentReference, font_dict: &mut FontDict) {
+    pub fn load_font(font: &Font, font_dict: &mut FontDict) {
         match font.source {
             FontSource::Local => {
                 font_dict.load_from_path(
@@ -281,7 +278,7 @@ impl PdfLayout {
                     },
                 ) {
                     let font_data = best_match.load().unwrap();
-                    let font_stream = font_data.copy_font_data().unwrap().clone();
+                    let font_stream = font_data.copy_font_data().unwrap();
                     let rusttype_font =
                         rusttype::Font::try_from_vec((*font_stream).clone()).unwrap();
 
@@ -302,21 +299,17 @@ impl PdfLayout {
 
                     if !font_dict.contains_key(&Font::default_name()) {
                         let default_font = Font::default();
-                        PdfLayout::load_font(&default_font, &doc, font_dict);
+                        PdfLayout::load_font(&default_font, font_dict);
                     }
                 }
             }
         }
     }
 
-    pub fn load_fonts(
-        layout_schema: &LayoutSchema,
-        doc: &printpdf::PdfDocumentReference,
-        font_dict: &mut FontDict,
-    ) {
+    pub fn load_fonts(layout_schema: &LayoutSchema, font_dict: &mut FontDict) {
         for font in layout_schema.fonts() {
             if !font_dict.contains_key(&font.full_name()) {
-                PdfLayout::load_font(&font, &doc, font_dict);
+                PdfLayout::load_font(&font, font_dict);
             }
         }
     }
