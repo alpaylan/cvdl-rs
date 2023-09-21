@@ -5,9 +5,9 @@ use serde::{Deserialize, Serialize};
 
 use crate::{
     alignment::Alignment,
+    any_layout::ElementBox,
     basic_layout::BasicLayout,
     container::Container,
-    document::DocumentDefinition,
     element::Element,
     font::{Font, FontDict},
     margin::Margin,
@@ -234,7 +234,7 @@ impl SectionLayout {
         }
     }
 
-    pub fn normalize(&self, document: &DocumentDefinition, font_dict: &FontDict) -> SectionLayout {
+    pub fn normalize(&self, width: f32, font_dict: &FontDict) -> SectionLayout {
         log::debug!(
             "Normalizing document, checking if {} is instantiated...",
             self
@@ -247,11 +247,11 @@ impl SectionLayout {
 
         log::debug!("Document is instantiated. Scaling widths...");
 
-        let scaled_layout = self.scale_width(document.width);
+        let scaled_layout = self.scale_width(width);
 
         log::debug!("Widths are scaled. Bounding widths...");
 
-        let bounded_layout = scaled_layout.bound_width(document.width);
+        let bounded_layout = scaled_layout.bound_width(width);
 
         log::debug!("Widths are bounded. Filling fonts...");
 
@@ -337,16 +337,16 @@ impl SectionLayout {
 }
 
 impl SectionLayout {
-    pub fn compute_boxes(
-        &self,
-        height_offset: f32,
-        font_dict: &FontDict,
-    ) -> (f32, Vec<(SpatialBox, Element)>) {
+    pub fn compute_boxes(&self, font_dict: &FontDict) -> ElementBox {
         let mut textbox_positions: Vec<(SpatialBox, Element)> = Vec::new();
-        let top_left: Point = Point::new(0.0, height_offset);
+        let top_left: Point = Point::new(0.0, 0.0);
         let depth = self.compute_textbox_positions(&mut textbox_positions, top_left, font_dict);
 
-        (depth, textbox_positions)
+        let bounding_box = SpatialBox::new(
+            Point::new(0.0, 0.0),
+            Point::new(self.width().get_fixed_unchecked(), depth),
+        );
+        ElementBox::new(bounding_box, textbox_positions)
     }
 
     fn compute_textbox_positions(

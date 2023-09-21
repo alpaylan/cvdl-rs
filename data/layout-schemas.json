@@ -1,19 +1,19 @@
 [
     {
-        "schema-name": "Work-Experience",
-        "header-layout-schema": {
+        "schema_name": "Work-Experience",
+        "header_layout_schema": {
             "Ref": {
                 "item": "Title",
                 "width": "70%",
                 "font": {
-                    "name": "Baskerville",
+                    "name": "Exo",
                     "size": 14.0,
                     "weight": "Bold",
-                    "source": "System"
+                    "source": "Local"
                 }
             }
         },
-        "item-layout-schema": {
+        "item_layout_schema": {
             "Stack": {
                 "elements": [
                     {

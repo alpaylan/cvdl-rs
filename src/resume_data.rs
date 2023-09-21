@@ -10,13 +10,9 @@ pub struct ResumeData {
 #[serde_as]
 #[derive(Serialize, Deserialize, Debug)]
 pub struct ResumeSection {
-    #[serde(rename = "section-name")]
-    pub name: String,
-    #[serde(rename = "data-schema")]
+    pub section_name: String,
     pub data_schema: String,
-    #[serde(rename = "layout-schema")]
     pub layout_schema: String,
-    #[serde(rename = "data")]
     #[serde_as(deserialize_as = "HashMap<_, _>")]
     #[serde(default = "HashMap::new")]
     pub data: HashMap<ItemName, ItemContent>,

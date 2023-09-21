@@ -1,8 +1,8 @@
 [
     {
-        "section-name": "Profile",
-        "data-schema": "Profile",
-        "layout-schema": "Profile-Compact",
+        "section_name": "Profile",
+        "data_schema": "Profile",
+        "layout_schema": "Profile-Compact",
         "data": {
             "Name": "Alperen",
             "Surname": "Keles",
@@ -31,9 +31,9 @@
         ]
     },
     {
-        "section-name": "Education",
-        "data-schema": "Education",
-        "layout-schema": "Education",
+        "section_name": "Education",
+        "data_schema": "Education",
+        "layout_schema": "Education",
         "data": {
             "Title": "Education"
         },
@@ -58,9 +58,9 @@
         ]
     },
     {
-        "section-name": "Publications",
-        "data-schema": "Publications",
-        "layout-schema": "Publications",
+        "section_name": "Publications",
+        "data_schema": "Publications",
+        "layout_schema": "Publications",
         "data": {
             "Title": "Publications"
         },
@@ -89,9 +89,9 @@
         ]
     },
     {
-        "section-name": "Projects",
-        "data-schema": "Projects",
-        "layout-schema": "Projects",
+        "section_name": "Projects",
+        "data_schema": "Projects",
+        "layout_schema": "Projects",
         "data": {
             "Title": "Projects"
         },
@@ -107,9 +107,9 @@
         ]
     },
     {
-        "section-name": "Community-Service",
-        "data-schema": "Community-Service",
-        "layout-schema": "Community-Service",
+        "section_name": "Community-Service",
+        "data_schema": "Community-Service",
+        "layout_schema": "Community-Service",
         "data": {
             "Title": "Community-Service"
         },
@@ -133,9 +133,9 @@
         ]
     },
     {
-        "section-name": "Work-Experience",
-        "data-schema": "Work-Experience",
-        "layout-schema": "Work-Experience",
+        "section_name": "Work-Experience",
+        "data_schema": "Work-Experience",
+        "layout_schema": "Work-Experience",
         "data": {
             "Title": "Work-Experience"
         },

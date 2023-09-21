@@ -100,12 +100,9 @@ pub struct Field {
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct DataSchema {
-    #[serde(rename = "schema-name")]
-    pub name: String,
-    #[serde(rename = "header-schema")]
+    pub schema_name: String,
     #[serde(default = "Vec::new")]
     pub header_schema: Vec<Field>,
-    #[serde(rename = "item-schema")]
     pub item_schema: Vec<Field>,
 }
 

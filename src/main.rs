@@ -1,4 +1,5 @@
 mod alignment;
+mod any_layout;
 mod basic_layout;
 mod container;
 mod data_schema;
@@ -11,6 +12,7 @@ mod margin;
 mod pdf_layout;
 mod point;
 mod resume_data;
+mod resume_layout;
 mod spatial_box;
 mod width;
 
@@ -33,7 +35,11 @@ fn main() {
     let schema = fs::read_to_string(layout_schema_path).unwrap();
     let layout_schemas = layout_schema::LayoutSchema::from_json(&schema);
 
-    let resume_path = env::args().nth(3).expect("No resume path provided");
+    let resume_layout_path = env::args().nth(3).expect("No resume layout path provided");
+    let schema = fs::read_to_string(resume_layout_path).unwrap();
+    let resume_layout = resume_layout::ResumeLayout::from_json(&schema);
+
+    let resume_path = env::args().nth(4).expect("No resume path provided");
     let resume = fs::read_to_string(resume_path).unwrap();
     let resume_data = resume_data::ResumeData::from_json(&resume);
 
@@ -44,8 +50,8 @@ fn main() {
         },
     };
 
-    let results_path = env::args().nth(4).expect("No results path provided");
-    let debug = if let Some(is_debug) = env::args().nth(5) {
+    let results_path = env::args().nth(5).expect("No results path provided");
+    let debug = if let Some(is_debug) = env::args().nth(6) {
         is_debug == "--debug"
     } else {
         false
@@ -56,6 +62,7 @@ fn main() {
             layout_schemas,
             resume_data,
             data_schemas,
+            resume_layout,
             Path::new(results_path.as_str()),
             debug,
         )

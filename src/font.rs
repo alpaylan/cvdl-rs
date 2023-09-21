@@ -1,8 +1,14 @@
 use std::{collections::HashMap, fs::File, io::Read};
 
-use font_kit::properties::{Style, Weight};
+use font_kit::{
+    family_name::FamilyName,
+    properties::{Properties, Stretch, Style, Weight},
+    source::SystemSource,
+};
 use rusttype::{point, Scale};
 use serde::{Deserialize, Serialize};
+
+use crate::layout_schema::LayoutSchema;
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Font {
@@ -112,11 +118,13 @@ pub struct LoadedFont {
 pub type FontDict = HashMap<String, LoadedFont>;
 
 pub trait FontLoader {
-    fn load_from_path(&mut self, name: String, path: String);
+    fn load_font_from_path(&mut self, name: String, path: String);
+    fn load_fonts_from_schema(&mut self, layout_schema: &LayoutSchema);
+    fn load_font(&mut self, font: &Font);
 }
 
 impl FontLoader for FontDict {
-    fn load_from_path(&mut self, name: String, path: String) {
+    fn load_font_from_path(&mut self, name: String, path: String) {
         let mut file = File::open(path.clone()).unwrap();
         let mut bytes = Vec::new();
         file.read_to_end(&mut bytes).unwrap();
@@ -129,6 +137,60 @@ impl FontLoader for FontDict {
                 rusttype_font,
             },
         );
+    }
+
+    fn load_font(&mut self, font: &Font) {
+        match font.source {
+            FontSource::Local => {
+                self.load_font_from_path(
+                    font.full_name(),
+                    format!("assets/{}/static/{}.ttf", font.name, font.full_name()),
+                );
+            }
+            FontSource::System => {
+                if let Ok(best_match) = SystemSource::new().select_best_match(
+                    &[FamilyName::Title(font.name.clone())],
+                    &Properties {
+                        style: font.style.clone().into(),
+                        weight: font.weight.clone().into(),
+                        stretch: Stretch::NORMAL,
+                    },
+                ) {
+                    let font_data = best_match.load().unwrap();
+                    let font_stream = font_data.copy_font_data().unwrap();
+                    let rusttype_font =
+                        rusttype::Font::try_from_vec((*font_stream).clone()).unwrap();
+
+                    log::info!("{} will be used in your document", font_data.full_name());
+
+                    self.insert(
+                        font.full_name(),
+                        LoadedFont {
+                            source: FontLoadSource::System(font_data),
+                            rusttype_font,
+                        },
+                    );
+                } else {
+                    log::info!(
+                        "{} was not found in your system, will use the default font",
+                        font.full_name()
+                    );
+
+                    if !self.contains_key(&Font::default_name()) {
+                        let default_font = Font::default();
+                        self.load_font(&default_font);
+                    }
+                }
+            }
+        }
+    }
+
+    fn load_fonts_from_schema(&mut self, layout_schema: &LayoutSchema) {
+        for font in layout_schema.fonts() {
+            if !self.contains_key(&font.full_name()) {
+                self.load_font(&font);
+            }
+        }
     }
 }
 

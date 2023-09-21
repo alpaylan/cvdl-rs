@@ -4,11 +4,8 @@ use crate::{font::Font, layout::SectionLayout};
 
 #[derive(Serialize, Deserialize)]
 pub struct LayoutSchema {
-    #[serde(rename = "schema-name")]
     pub schema_name: String,
-    #[serde(rename = "header-layout-schema")]
     pub header_layout_schema: SectionLayout,
-    #[serde(rename = "item-layout-schema")]
     pub item_layout_schema: SectionLayout,
 }
 

@@ -1,10 +1,10 @@
 [
     {
-        "schema-name": "Education",
-        "header-schema": [
+        "schema_name": "Education",
+        "header_schema": [
             { "name": "Title", "type": "String" }
         ],
-        "item-schema": [
+        "item_schema": [
             { "name": "School", "type": "String" },
             { "name": "Degree", "type": "String" },
             { "name": "Department", "type": "String" },
@@ -15,11 +15,11 @@
         ]
     },
     {
-        "schema-name": "General",
-        "header-schema": [
+        "schema_name": "General",
+        "header_schema": [
             { "name": "Title", "type": "String" }
         ],
-        "item-schema": [
+        "item_schema": [
             { "name": "Title", "type": "String" },
             { "name": "Subtitle", "type": "String" },
             { "name": "Text", "type": "String" },
@@ -30,19 +30,19 @@
         ]
     },
     {
-        "schema-name": "Skill",
-        "header-schema": [
+        "schema_name": "Skill",
+        "header_schema": [
             { "name": "Title", "type": "String" }
         ],
-        "item-schema": [
+        "item_schema": [
             { "name": "Skill", "type": "String" },
             { "name": "Information", "type": "String" },
             { "name": "Level", "type": "Number" }
         ]
     },
     {
-        "schema-name": "Profile",
-        "header-schema": [
+        "schema_name": "Profile",
+        "header_schema": [
             { "name": "Name", "type": "String" },
             { "name": "Surname", "type": "String" },
             { "name": "Linkedin", "type": "String" },
@@ -50,17 +50,17 @@
             { "name": "Email", "type": "String" },
             { "name": "Google Scholar", "type": "String" }
         ],
-        "item-schema": [
+        "item_schema": [
             { "name": "Text", "type": "String" },
             { "name": "URL", "type": "String" }
         ]
     },
     {
-        "schema-name": "Projects",
-        "header-schema": [
+        "schema_name": "Projects",
+        "header_schema": [
             { "name": "Title", "type": "String" }
         ],
-        "item-schema": [
+        "item_schema": [
             { "name": "Title", "type": "String" },
             { "name": "Subtitle", "type": "String" },
             { "name": "Skills", "type": "List<String>" },
@@ -71,11 +71,11 @@
         ]
     },
     {
-        "schema-name": "Community-Service",
-        "header-schema": [
+        "schema_name": "Community-Service",
+        "header_schema": [
             { "name": "Title", "type": "String" }
         ],
-        "item-schema": [
+        "item_schema": [
             { "name": "Title", "type": "String" },
             { "name": "Subtitle", "type": "String" },
             { "name": "Skills", "type": "List<String>" },
@@ -86,11 +86,11 @@
         ]
     },
     {
-        "schema-name": "Work-Experience",
-        "header-schema": [
+        "schema_name": "Work-Experience",
+        "header_schema": [
             { "name": "Title", "type": "String" }
         ],
-        "item-schema": [
+        "item_schema": [
             { "name": "Company", "type": "String" },
             { "name": "Position", "type": "String" },
             { "name": "Skills", "type": "List<String>" },
@@ -101,11 +101,11 @@
         ]
     },
     {
-        "schema-name": "Publications",
-        "header-schema": [
+        "schema_name": "Publications",
+        "header_schema": [
             { "name": "Title", "type": "String" }
         ],
-        "item-schema": [
+        "item_schema": [
             { "name": "Publication-Title", "type": "String" },
             { "name": "Publication-URL", "type": "String" },
             { "name": "Venue-Title", "type": "String" },

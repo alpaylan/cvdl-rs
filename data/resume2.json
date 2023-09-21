@@ -1,8 +1,8 @@
 [
     {
-        "section-name": "Work-Experience",
-        "data-schema": "Work-Experience",
-        "layout-schema": "Work-Experience",
+        "section_name": "Work-Experience",
+        "data_schema": "Work-Experience",
+        "layout_schema": "Work-Experience",
         "data": {
             "Title": "Work Experience"
         },
