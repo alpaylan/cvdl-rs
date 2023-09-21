@@ -21,10 +21,10 @@ with your own CV.
 
 ## Roadmap and Todo List
 
-- [ ] Add document-level layout
-  - [ ] Add document margin
-  - [ ] Add document layout(multi-column etc)
-  - [ ] Add page cut
+- [x] Add document-level layout
+  - [x] Add document margin
+  - [x] Add document layout(multi-column etc)
+  - [x] Add page cut
 - [x] Add absolute/percentage widths
 - [ ] Add CV examples
 - [ ] Add layout examples
@@ -45,8 +45,8 @@ with your own CV.
 - [ ] Add proper testing
   - [ ] I'm still not sure how to do this one.
 - [x] Add URL elements
-- [ ] Abstract layout backend better.
-  - [ ] Push the document-level details to `document_layout` module. Layout backends should only consume `ElementBox = SpatialBox x Element` and render that.
+- [x] Abstract layout backend better.
+  - [x] Push the document-level details to `document_layout` module. Layout backends should only consume `ElementBox = SpatialBox x Element` and render that.
 - [ ] (maybe) Use some Point and Box libraries. Writing our types is okay for now but it's probably better to use something out of the box.
 - [ ] Consider the performance effect of `get_width``. If important, switch to binary search instead of linear search.
 - [ ] Add proper CLI using Clap.
@@ -60,7 +60,7 @@ with your own CV.
 - [ ] Implement `with_macro`
   - [ ] We use `with_foo` for structs where we clone the original object and change only one field. The proper way of doing this entails first creating a `modifier object` that expects a `.build()` object at the end so we don't create the same object 5 times. Doing this for each type would take a decent amount of time, so we don't do that for now. If we had a macro though, it would be good to have `#[derive(With)]` and just be able to use this.
 - [ ] Add proper debugging mechanisms
-  - [ ] Boxes around each element
+  - [x] Boxes around each element
   - [ ] Boxes around each layout
   - [ ] Lines for margins with width markers
   - [ ] Unique id's to each layout/component/box.
@@ -72,5 +72,4 @@ with your own CV.
 - [ ] Comment parts of the with custom logic.
 - [ ] Document the compilation phases.
 - [ ] Add PNG backend.
-- [ ] Add ASCII backend.
 - [ ] Add ASCII backend.

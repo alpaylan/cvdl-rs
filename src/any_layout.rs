@@ -148,7 +148,6 @@ impl AnyLayout {
             current_y += b.bounding_box.height();
         });
 
-        println!("Pages: {:?}", pages.len());
         log::info!("Position calculations are completed.");
 
         Ok((font_dict, pages))
