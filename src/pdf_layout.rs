@@ -36,7 +36,7 @@ impl PdfLayout {
         let (mut font_dict, pages) =
             AnyLayout::render(layout_schemas, resume_data, data_schemas, resume_layout).unwrap();
 
-        let current_layer = doc.get_page(page1).get_layer(layer1);
+        let _current_layer = doc.get_page(page1).get_layer(layer1);
 
         log::info!("Constructing printpdf font dictionary...");
 
