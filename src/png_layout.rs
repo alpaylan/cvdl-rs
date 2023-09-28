@@ -69,25 +69,6 @@ impl PngLayout {
             image.save(format!("output_{}.png", index)).unwrap();
             println!("{}", format!("Generated: output_{}.png", index));
         }
-
-        // Loop through the glyphs in the text, positing each one on a line
-        // for glyph in glyphs {
-        //     if let Some(bounding_box) = glyph.pixel_bounding_box() {
-        //         // Draw the glyph into the image per-pixel by using the draw closure
-        //         glyph.draw(|x, y, v| {
-        //             image.put_pixel(
-        //                 // Offset the position by the glyph bounding box
-        //                 x + bounding_box.min.x as u32,
-        //                 y + bounding_box.min.y as u32,
-        //                 // Turn the coverage into an alpha value
-        //                 Rgba([colour.0, colour.1, colour.2, (v * 255.0) as u8]),
-        //             )
-        //         });
-        //     }
-        // }
-
-        // // Save the image to a png file
-
         Ok(())
     }
 }
