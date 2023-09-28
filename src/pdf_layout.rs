@@ -5,20 +5,16 @@ use printpdf::{Color, IndirectFontRef, Line, LinkAnnotation, Mm, PdfDocument, Re
 use crate::{
     any_layout::{AnyLayout, ElementBox},
     data_schema::DataSchema,
-    document::DocumentDefinition,
     font::{Font, FontLoadSource},
     layout_schema::LayoutSchema,
     resume_data::ResumeData,
     resume_layout::ResumeLayout,
 };
 
-pub struct PdfLayout {
-    pub doc: DocumentDefinition,
-}
+pub struct PdfLayout;
 
 impl PdfLayout {
     pub fn render(
-        &self,
         layout_schemas: Vec<LayoutSchema>,
         resume_data: ResumeData,
         data_schemas: Vec<DataSchema>,
@@ -28,13 +24,14 @@ impl PdfLayout {
     ) -> std::io::Result<()> {
         let (doc, page1, layer1) = PdfDocument::new(
             "PDF_Document_title",
-            Mm(self.doc.width as f64),
-            Mm(self.doc.height as f64),
+            Mm(resume_layout.width as f64),
+            Mm(resume_layout.height as f64),
             "Layer 1",
         );
 
         let (mut font_dict, pages) =
-            AnyLayout::render(layout_schemas, resume_data, data_schemas, resume_layout).unwrap();
+            AnyLayout::render(&layout_schemas, &resume_data, &data_schemas, &resume_layout)
+                .unwrap();
 
         let _current_layer = doc.get_page(page1).get_layer(layer1);
 
@@ -62,18 +59,17 @@ impl PdfLayout {
         log::info!("Rendering the document...");
         // Render the boxes
         for (index, boxes) in pages.iter().enumerate() {
-            
             let (curr_page, curr_layer) = if index == 0 {
                 (page1, layer1)
             } else {
                 let (page, layer) = doc.add_page(
-                    Mm(self.doc.width as f64),
-                    Mm(self.doc.height as f64),
+                    Mm(resume_layout.width as f64),
+                    Mm(resume_layout.height as f64),
                     format!("Page {}", index + 1),
                 );
                 (page, layer)
             };
-            
+
             for element_box in boxes {
                 let ElementBox {
                     bounding_box: _bounding_box,
@@ -94,28 +90,28 @@ impl PdfLayout {
                             (
                                 printpdf::Point::new(
                                     Mm(box_.top_left.x.into()),
-                                    Mm((self.doc.height - box_.top_left.y).into()),
+                                    Mm((resume_layout.height - box_.top_left.y).into()),
                                 ),
                                 false,
                             ),
                             (
                                 printpdf::Point::new(
                                     Mm(box_.bottom_right.x.into()),
-                                    Mm((self.doc.height - box_.top_left.y).into()),
+                                    Mm((resume_layout.height - box_.top_left.y).into()),
                                 ),
                                 false,
                             ),
                             (
                                 printpdf::Point::new(
                                     Mm(box_.bottom_right.x.into()),
-                                    Mm((self.doc.height - box_.bottom_right.y).into()),
+                                    Mm((resume_layout.height - box_.bottom_right.y).into()),
                                 ),
                                 false,
                             ),
                             (
                                 printpdf::Point::new(
                                     Mm(box_.top_left.x.into()),
-                                    Mm((self.doc.height - box_.bottom_right.y).into()),
+                                    Mm((resume_layout.height - box_.bottom_right.y).into()),
                                 ),
                                 false,
                             ),
@@ -136,7 +132,7 @@ impl PdfLayout {
                         element.item.clone(),
                         (element.font.size * 2.0) as f64,
                         Mm(box_.top_left.x.into()),
-                        Mm((self.doc.height
+                        Mm((resume_layout.height
                             - (box_.top_left.y + element.font.get_height(&font_dict)))
                         .into()),
                         printpdf_font_dict
@@ -151,9 +147,9 @@ impl PdfLayout {
                     if let Some(url) = &element.url {
                         let rect = Rect::new(
                             Mm(box_.top_left.x.into()),
-                            Mm((self.doc.height - box_.bottom_right.y).into()),
+                            Mm((resume_layout.height - box_.bottom_right.y).into()),
                             Mm(box_.bottom_right.x.into()),
-                            Mm((self.doc.height - box_.top_left.y).into()),
+                            Mm((resume_layout.height - box_.top_left.y).into()),
                         );
                         current_layer.add_link_annotation(LinkAnnotation::new(
                             rect,
@@ -195,23 +191,20 @@ mod tests {
         let schema = fs::read_to_string("data/layout-schemas.json").unwrap();
         let layout_schemas = layout_schema::LayoutSchema::from_json(&schema);
 
+        let resume_layout = resume_layout::ResumeLayout::from_json(
+            &fs::read_to_string("data/resume-layout.json").unwrap(),
+        );
+
         let mut font_dict = FontDict::new();
 
-        let pdf_layout = PdfLayout {
-            doc: DocumentDefinition {
-                width: 612.0,
-                height: 792.0,
-            },
-        };
-
-        pdf_layout
-            .render(
-                layout_schemas,
-                resume_data,
-                data_schemas,
-                Path::new("results/output.pdf"),
-                true,
-            )
-            .unwrap();
+        PdfLayout::render(
+            layout_schemas,
+            resume_data,
+            data_schemas,
+            resume_layout,
+            Path::new("results/output.pdf"),
+            true,
+        )
+        .unwrap();
     }
 }

@@ -3,13 +3,13 @@ mod any_layout;
 mod basic_layout;
 mod container;
 mod data_schema;
-mod document;
 mod element;
 mod font;
 mod layout;
 mod layout_schema;
 mod margin;
 mod pdf_layout;
+mod png_layout;
 mod point;
 mod resume_data;
 mod resume_layout;
@@ -18,8 +18,8 @@ mod width;
 
 use std::fs;
 
-use document::DocumentDefinition;
 use pdf_layout::PdfLayout;
+use png_layout::PngLayout;
 use std::path::Path;
 
 use std::env;
@@ -43,13 +43,6 @@ fn main() {
     let resume = fs::read_to_string(resume_path).unwrap();
     let resume_data = resume_data::ResumeData::from_json(&resume);
 
-    let pdf_layout = PdfLayout {
-        doc: DocumentDefinition {
-            width: 612.0,
-            height: 792.0,
-        },
-    };
-
     let results_path = env::args().nth(5).expect("No results path provided");
     let debug = if let Some(is_debug) = env::args().nth(6) {
         is_debug == "--debug"
@@ -57,14 +50,13 @@ fn main() {
         false
     };
 
-    pdf_layout
-        .render(
-            layout_schemas,
-            resume_data,
-            data_schemas,
-            resume_layout,
-            Path::new(results_path.as_str()),
-            debug,
-        )
-        .unwrap();
+    PdfLayout::render(
+        layout_schemas,
+        resume_data,
+        data_schemas,
+        resume_layout,
+        Path::new(results_path.as_str()),
+        debug,
+    )
+    .unwrap();
 }

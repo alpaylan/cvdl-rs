@@ -1,9 +1,5 @@
 {
-    "column_type": {
-        "DoubleColumn": {
-            "vertical_margin": 8
-        }
-    },
+    "column_type": "SingleColumn",
     "width": 612,
     "height": 792,
     "margin": {

@@ -1,4 +1,8 @@
-use std::{collections::HashMap, fs::File, io::Read};
+use std::{
+    collections::HashMap,
+    fs::{self, File},
+    io::Read,
+};
 
 use font_kit::{
     family_name::FamilyName,
@@ -243,5 +247,26 @@ impl Font {
 
         // work out the layout size
         v_metrics.ascent - v_metrics.descent
+    }
+
+    pub fn get_available_fonts() -> (Vec<String>, Vec<String>) {
+        let ss = SystemSource::new();
+        let system_fonts = ss.all_families().unwrap();
+
+        log::info!("{} system fonts have been discovered!", system_fonts.len());
+
+        log::info!("Discovering locally installed fonts...");
+
+        let local_fonts: Vec<String> = fs::read_dir("assets")
+            .unwrap()
+            .filter_map(|t| t.ok())
+            .filter(|dir_entry| dir_entry.file_type().map_or(false, |f| f.is_dir()))
+            .map(|dir_entry| dir_entry.file_name().into_string())
+            .filter_map(|t| t.ok())
+            .collect();
+
+        log::info!("{} local fonts have been discovered!", local_fonts.len());
+
+        (system_fonts, local_fonts)
     }
 }

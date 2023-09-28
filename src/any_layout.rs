@@ -10,7 +10,7 @@ use crate::{
     spatial_box::SpatialBox,
 };
 
-pub struct AnyLayout {}
+pub struct AnyLayout;
 
 #[derive(Debug, Clone)]
 pub struct ElementBox {
@@ -51,10 +51,10 @@ impl ElementBox {
 
 impl AnyLayout {
     pub fn render(
-        layout_schemas: Vec<LayoutSchema>,
-        resume_data: ResumeData,
-        data_schemas: Vec<DataSchema>,
-        resume_layout: ResumeLayout,
+        layout_schemas: &Vec<LayoutSchema>,
+        resume_data: &ResumeData,
+        data_schemas: &Vec<DataSchema>,
+        resume_layout: &ResumeLayout,
     ) -> std::io::Result<(FontDict, Vec<Vec<ElementBox>>)> {
         // Font dictionary is used for font caching
         let mut font_dict: FontDict = FontDict::new();
@@ -70,7 +70,7 @@ impl AnyLayout {
             ColumnType::DoubleColumn { vertical_margin } => (width - vertical_margin) / 2.0,
         };
 
-        for section in resume_data.sections {
+        for section in &resume_data.sections {
             // Render Section Header
             // 1. Find the layout schema for the section
             log::info!("Computing section: {}", section.section_name);

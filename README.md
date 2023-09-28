@@ -17,19 +17,14 @@ For examples of these files, you can see `data/data-schemas.json`, `data/layout-
 If you want to run the executable, you can run using the scheme below. You can change the files for playing around
 with your own CV.
 
-`cargo run -- data/data-schemas.json data/layout-schemas.json data/resume2.json results/output.pdf`
+`cargo run -- data/data-schemas.json data/layout-schemas.json data/resume-layout.json data/resume2.json results/output.pdf --debug`
+
+## Current Capabilities[todo]
 
 ## Roadmap and Todo List
 
-- [x] Add document-level layout
-  - [x] Add document margin
-  - [x] Add document layout(multi-column etc)
-  - [x] Add page cut
-- [x] Add absolute/percentage widths
 - [ ] Add CV examples
 - [ ] Add layout examples
-- [x] Add logging
-- [x] Standardize u32/f64 usage. Create clear-cut domains for each.
 - [ ] Start using data schemas
   - [ ] Add validation
   - [ ] Add serialization
@@ -37,16 +32,9 @@ with your own CV.
   - [ ] Add product types
   - [ ] Add custom serializers
 - [ ] Add proper font support
-  - [x] Add font-weight
-  - [x] Add font-style
-  - [x] Add more font types
-  - [x] Properly manage font assets
   - [ ] Check font licensing issues.
 - [ ] Add proper testing
   - [ ] I'm still not sure how to do this one.
-- [x] Add URL elements
-- [x] Abstract layout backend better.
-  - [x] Push the document-level details to `document_layout` module. Layout backends should only consume `ElementBox = SpatialBox x Element` and render that.
 - [ ] (maybe) Use some Point and Box libraries. Writing our types is okay for now but it's probably better to use something out of the box.
 - [ ] Consider the performance effect of `get_width``. If important, switch to binary search instead of linear search.
 - [ ] Add proper CLI using Clap.
@@ -71,5 +59,4 @@ with your own CV.
 - [ ] Add CONTRIBUTIONS doc.
 - [ ] Comment parts of the with custom logic.
 - [ ] Document the compilation phases.
-- [ ] Add PNG backend.
 - [ ] Add ASCII backend.
