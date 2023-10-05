@@ -48,7 +48,7 @@ fn main() {
         local_storage::LocalStorage::new()
     };
 
-    PdfLayout::render(
+    PngLayout::render_and_save(
         local_storage,
         resume_data,
         Path::new(results_path.as_str()),

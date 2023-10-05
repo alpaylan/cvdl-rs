@@ -1,15 +1,11 @@
 use std::path::Path;
 
-use image::{DynamicImage, Rgba};
+use image::{DynamicImage, Rgba, Pixel};
 use rusttype::{point, Scale};
 
 use crate::{
-    any_layout::AnyLayout,
-    data_schema::DataSchema,
-    font::Font,
-    layout_schema::LayoutSchema,
-    local_storage::{self, LocalStorage},
-    resume_data::ResumeData,
+    any_layout::AnyLayout, data_schema::DataSchema, font::Font, layout_schema::LayoutSchema,
+    local_storage::LocalStorage, resume_data::ResumeData,
 };
 
 pub struct PngLayout;
@@ -18,10 +14,8 @@ impl PngLayout {
     pub fn render(
         local_storage: LocalStorage,
         resume_data: ResumeData,
-        _filepath: &Path,
-        _debug: bool,
-    ) -> std::io::Result<()> {
-        // Create a new rgba image with some padding
+    ) -> Vec<image::ImageBuffer<Rgba<u8>, Vec<u8>>> {
+        let mut images: Vec<image::ImageBuffer<Rgba<u8>, Vec<u8>>> = Vec::new();
         let data_schemas = &resume_data
             .data_schemas()
             .iter()
@@ -77,9 +71,40 @@ impl PngLayout {
                     }
                 }
             }
+
+            images.push(image);
+        }
+
+        images
+    }
+
+    pub fn render_and_save(
+        local_storage: LocalStorage,
+        resume_data: ResumeData,
+        _filepath: &Path,
+        _debug: bool,
+    ) -> std::io::Result<()> {
+        let pages = PngLayout::render(local_storage, resume_data);
+
+        for (index, image) in pages.iter().enumerate() {
             image.save(format!("output_{}.png", index)).unwrap();
             println!("{}", format!("Generated: output_{}.png", index));
         }
+
         Ok(())
     }
+
+    pub fn render_and_pixelize(
+        local_storage: LocalStorage,
+        resume_data: ResumeData,
+    ) -> Vec<Vec<[u8; 4]>> {
+        let pages = PngLayout::render(local_storage, resume_data);
+        let mut pixels: Vec<Vec<[u8; 4]>> = Vec::new();
+        for image in pages {
+            pixels.push(image.pixels().map(|p| p.to_owned().0).collect());
+        }
+
+        pixels
+    }
+
 }
