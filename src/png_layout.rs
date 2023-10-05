@@ -4,22 +4,37 @@ use image::{DynamicImage, Rgba};
 use rusttype::{point, Scale};
 
 use crate::{
-    any_layout::AnyLayout, data_schema::DataSchema, font::Font, layout_schema::LayoutSchema,
-    resume_data::ResumeData, resume_layout::ResumeLayout,
+    any_layout::AnyLayout,
+    data_schema::DataSchema,
+    font::Font,
+    layout_schema::LayoutSchema,
+    local_storage::{self, LocalStorage},
+    resume_data::ResumeData,
 };
 
 pub struct PngLayout;
 
 impl PngLayout {
     pub fn render(
-        layout_schemas: Vec<LayoutSchema>,
+        local_storage: LocalStorage,
         resume_data: ResumeData,
-        data_schemas: Vec<DataSchema>,
-        resume_layout: ResumeLayout,
         _filepath: &Path,
         _debug: bool,
     ) -> std::io::Result<()> {
         // Create a new rgba image with some padding
+        let data_schemas = &resume_data
+            .data_schemas()
+            .iter()
+            .map(|schema| local_storage.load_data_schema(schema))
+            .collect::<Vec<DataSchema>>();
+
+        let layout_schemas = &resume_data
+            .layout_schemas()
+            .iter()
+            .map(|schema| local_storage.load_layout_schema(schema))
+            .collect::<Vec<LayoutSchema>>();
+
+        let resume_layout = local_storage.load_resume_layout(resume_data.layout.as_str());
 
         let (font_dict, pages) =
             AnyLayout::render(&layout_schemas, &resume_data, &data_schemas, &resume_layout)

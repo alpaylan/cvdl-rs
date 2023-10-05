@@ -7,21 +7,33 @@ use crate::{
     data_schema::DataSchema,
     font::{Font, FontLoadSource},
     layout_schema::LayoutSchema,
+    local_storage::{self, LocalStorage},
     resume_data::ResumeData,
-    resume_layout::ResumeLayout,
 };
 
 pub struct PdfLayout;
 
 impl PdfLayout {
     pub fn render(
-        layout_schemas: Vec<LayoutSchema>,
+        local_storage: LocalStorage,
         resume_data: ResumeData,
-        data_schemas: Vec<DataSchema>,
-        resume_layout: ResumeLayout,
         filepath: &Path,
         debug: bool,
     ) -> std::io::Result<()> {
+        let data_schemas = resume_data
+            .data_schemas()
+            .iter()
+            .map(|schema| local_storage.load_data_schema(schema))
+            .collect::<Vec<DataSchema>>();
+
+        let layout_schemas = resume_data
+            .layout_schemas()
+            .iter()
+            .map(|schema| local_storage.load_layout_schema(schema))
+            .collect::<Vec<LayoutSchema>>();
+
+        let resume_layout = local_storage.load_resume_layout(resume_data.layout.as_str());
+
         let (doc, page1, layer1) = PdfDocument::new(
             "PDF_Document_title",
             Mm(resume_layout.width as f64),

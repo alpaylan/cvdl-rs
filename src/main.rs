@@ -1,6 +1,6 @@
 #![feature(file_create_new)]
 
-use crate::layout_schema::LayoutSchema;
+use crate::{layout_schema::LayoutSchema, local_storage::LocalStorage};
 mod alignment;
 mod any_layout;
 mod basic_layout;
@@ -22,29 +22,30 @@ mod width;
 
 fn main() {
     env_logger::init();
-    local_storage::initiate_local_storage();
-    println!("{:?}", local_storage::list_data_schemas());
-    println!("{:?}", local_storage::list_layout_schemas());
-    println!("{:?}", local_storage::list_resume_layouts());
-    println!("{:?}", local_storage::list_resumes());
+    let ls = LocalStorage::new();
+    ls.initiate_local_storage();
+    println!("{:?}", ls.list_data_schemas());
+    println!("{:?}", ls.list_layout_schemas());
+    println!("{:?}", ls.list_resume_layouts());
+    println!("{:?}", ls.list_resumes());
 
-    let resume_data = local_storage::load_resume("resume2");
+    let resume_data = ls.load_resume("resume2");
 
     let _data_schemas = resume_data
         .data_schemas()
         .iter()
-        .map(|schema| local_storage::load_data_schema(schema))
+        .map(|schema| ls.load_data_schema(schema))
         .collect::<Vec<data_schema::DataSchema>>();
 
     let layout_schemas = resume_data
         .layout_schemas()
         .iter()
-        .map(|schema| local_storage::load_layout_schema(schema))
+        .map(|schema| ls.load_layout_schema(schema))
         .collect::<Vec<layout_schema::LayoutSchema>>();
 
     let mut layout_schema: LayoutSchema = layout_schemas.get(0).unwrap().clone();
 
     layout_schema.schema_name = "Test2".to_string();
 
-    local_storage::save_layout_schema(&layout_schema);
+    ls.save_layout_schema(&layout_schema);
 }
