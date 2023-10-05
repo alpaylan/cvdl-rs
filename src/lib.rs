@@ -1,3 +1,4 @@
+#![feature(file_create_new)]
 mod alignment;
 mod any_layout;
 mod basic_layout;
@@ -6,7 +7,8 @@ mod data_schema;
 mod element;
 pub mod font;
 mod layout;
-mod layout_schema;
+pub mod layout_schema;
+pub mod local_storage;
 mod margin;
 pub mod pdf_layout;
 pub mod png_layout;

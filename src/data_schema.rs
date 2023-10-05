@@ -3,9 +3,9 @@ use std::str::FromStr;
 use serde::{Deserialize, Serialize};
 use serde_with::{serde_as, DisplayFromStr};
 
-use crate::resume_data::ItemContent;
+use crate::{layout_schema::Named, resume_data::ItemContent};
 
-#[derive(Serialize, Deserialize, Debug, PartialEq)]
+#[derive(Serialize, Deserialize, Debug, PartialEq, Clone)]
 #[serde(untagged)]
 pub enum DocumentDataType {
     Date,
@@ -90,7 +90,7 @@ impl FromStr for DocumentDataType {
 }
 
 #[serde_as]
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Field {
     pub name: String,
     #[serde(rename = "type")]
@@ -98,12 +98,18 @@ pub struct Field {
     pub data_type: DocumentDataType,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct DataSchema {
     pub schema_name: String,
     #[serde(default = "Vec::new")]
     pub header_schema: Vec<Field>,
     pub item_schema: Vec<Field>,
+}
+
+impl Named for DataSchema {
+    fn name(&self) -> &str {
+        &self.schema_name
+    }
 }
 
 impl DataSchema {

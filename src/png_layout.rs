@@ -4,12 +4,8 @@ use image::{DynamicImage, Rgba};
 use rusttype::{point, Scale};
 
 use crate::{
-    any_layout::AnyLayout,
-    data_schema::DataSchema,
-    font::Font,
-    layout_schema::LayoutSchema,
-    resume_data::ResumeData,
-    resume_layout::ResumeLayout,
+    any_layout::AnyLayout, data_schema::DataSchema, font::Font, layout_schema::LayoutSchema,
+    resume_data::ResumeData, resume_layout::ResumeLayout,
 };
 
 pub struct PngLayout;
@@ -47,7 +43,7 @@ impl PngLayout {
 
                     // layout the glyphs in a line with 20 pixels padding
                     let glyphs: Vec<_> = font
-                        .layout(&text, scale, point(0.0, v_metrics.ascent))
+                        .layout(text, scale, point(0.0, v_metrics.ascent))
                         .collect();
 
                     for glyph in glyphs {

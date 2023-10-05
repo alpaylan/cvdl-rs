@@ -2,8 +2,11 @@ use serde::{Deserialize, Serialize};
 use serde_with::serde_as;
 use std::collections::HashMap;
 
+#[serde_as]
 #[derive(Serialize, Deserialize, Debug)]
 pub struct ResumeData {
+    pub layout: String,
+    #[serde_as(deserialize_as = "Vec<_>")]
     pub sections: Vec<ResumeSection>,
 }
 
@@ -48,8 +51,22 @@ impl ToString for ItemContent {
 
 impl ResumeData {
     pub fn from_json(json: &str) -> ResumeData {
-        let sections: Vec<ResumeSection> = serde_json::from_str(json).unwrap();
-        ResumeData { sections }
+        let resume_data: ResumeData = serde_json::from_str(json).unwrap();
+        resume_data
+    }
+
+    pub fn data_schemas(&self) -> Vec<String> {
+        self.sections
+            .iter()
+            .map(|section| section.data_schema.clone())
+            .collect()
+    }
+
+    pub fn layout_schemas(&self) -> Vec<String> {
+        self.sections
+            .iter()
+            .map(|section| section.layout_schema.clone())
+            .collect()
     }
 }
 

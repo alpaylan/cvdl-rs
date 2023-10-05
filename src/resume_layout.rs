@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-use crate::margin::Margin;
+use crate::{layout_schema::Named, margin::Margin};
 
 #[derive(Serialize, Deserialize, Clone, Debug, Default)]
 pub enum ColumnType {
@@ -22,15 +22,22 @@ impl ColumnType {
 
 #[derive(Serialize, Deserialize, Clone, Debug, Default)]
 pub struct ResumeLayout {
+    pub schema_name: String,
     pub column_type: ColumnType,
     pub margin: Margin,
     pub width: f32,
     pub height: f32,
 }
 
+impl Named for ResumeLayout {
+    fn name(&self) -> &str {
+        &self.schema_name
+    }
+}
+
 impl ResumeLayout {
-    pub fn from_json(json: &str) -> ResumeLayout {
-        let schema: ResumeLayout = serde_json::from_str(json).unwrap();
-        schema
+    pub fn from_json(json: &str) -> Vec<ResumeLayout> {
+        let schemas: Vec<ResumeLayout> = serde_json::from_str(json).unwrap();
+        schemas
     }
 }

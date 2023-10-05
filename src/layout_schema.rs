@@ -2,11 +2,21 @@ use serde::{Deserialize, Serialize};
 
 use crate::{font::Font, layout::SectionLayout};
 
-#[derive(Serialize, Deserialize)]
+pub trait Named {
+    fn name(&self) -> &str;
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct LayoutSchema {
     pub schema_name: String,
     pub header_layout_schema: SectionLayout,
     pub item_layout_schema: SectionLayout,
+}
+
+impl Named for LayoutSchema {
+    fn name(&self) -> &str {
+        &self.schema_name
+    }
 }
 
 impl LayoutSchema {

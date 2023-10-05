@@ -51,9 +51,9 @@ impl ElementBox {
 
 impl AnyLayout {
     pub fn render(
-        layout_schemas: &Vec<LayoutSchema>,
+        layout_schemas: &[LayoutSchema],
         resume_data: &ResumeData,
-        data_schemas: &Vec<DataSchema>,
+        data_schemas: &[DataSchema],
         resume_layout: &ResumeLayout,
     ) -> std::io::Result<(FontDict, Vec<Vec<ElementBox>>)> {
         // Font dictionary is used for font caching
@@ -82,7 +82,7 @@ impl AnyLayout {
                     return Err(Error::new(ErrorKind::Other, format!("SectionLayout not found for {}", section.layout_schema)));
                 };
 
-            font_dict.load_fonts_from_schema(&layout_schema);
+            font_dict.load_fonts_from_schema(layout_schema);
 
             // 2. Find the data schema for the section
             let _data_schema = data_schemas
@@ -108,7 +108,7 @@ impl AnyLayout {
                     .find(|&s| s.schema_name == section.layout_schema)
                     .unwrap();
 
-                font_dict.load_fonts_from_schema(&layout_schema);
+                font_dict.load_fonts_from_schema(layout_schema);
 
                 // 2. Find the data schema for the section
                 let _data_schema = data_schemas
