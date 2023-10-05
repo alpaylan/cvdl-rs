@@ -35,8 +35,10 @@ impl PngLayout {
                 .unwrap();
 
         for (index, page) in pages.iter().enumerate() {
+            let width = resume_layout.width as u32;
+            let height = resume_layout.height as u32;
             let mut image =
-                DynamicImage::new_rgba8(resume_layout.width as u32, resume_layout.height as u32)
+                DynamicImage::new_rgba8(width, height)
                     .to_rgba8();
 
             for element_box in page {
@@ -59,13 +61,16 @@ impl PngLayout {
                         if let Some(bounding_box) = glyph.pixel_bounding_box() {
                             // Draw the glyph into the image per-pixel by using the draw closure
                             glyph.draw(|x, y, v| {
-                                image.put_pixel(
-                                    // Offset the position by the glyph bounding box
-                                    element.0.top_left.x as u32 + x + bounding_box.min.x as u32,
-                                    element.0.top_left.y as u32 + y + bounding_box.min.y as u32,
-                                    // Turn the coverage into an alpha value
-                                    Rgba([0, 0, 0, (v * 255.0) as u8]),
-                                )
+                                if (((element.0.top_left.x as u32) + x + (bounding_box.min.x.max(0) as u32)) < width)
+                                && (((element.0.top_left.y as u32) + y + (bounding_box.min.y.max(0) as u32)) < height) {
+                                    image.put_pixel(
+                                        // Offset the position by the glyph bounding box
+                                        element.0.top_left.x as u32 + x + bounding_box.min.x.max(0) as u32,
+                                        element.0.top_left.y as u32 + y + bounding_box.min.y.max(0) as u32,
+                                        // Turn the coverage into an alpha value
+                                        Rgba([0, 0, 0, (v * 255.0) as u8]),
+                                    )
+                                }
                             });
                         }
                     }

@@ -204,6 +204,12 @@ impl Font {
     }
 
     pub fn get_width(&self, text: &str, font_dict: &FontDict) -> f32 {
+        let text = text.trim();
+        
+        if text.len() == 0 {
+            return 0.0;
+        }
+        
         // The font size to use
         let scale = Scale::uniform(self.size);
         let font = &font_dict

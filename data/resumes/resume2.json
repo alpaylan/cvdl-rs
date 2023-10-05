@@ -63,94 +63,33 @@
                         "C++",
                         "Unix"
                     ]
+                }
+            ]
+        },
+        {
+            "section_name": "Education",
+            "data_schema": "Education",
+            "layout_schema": "Education",
+            "data": {
+                "Title": "Education"
+            },
+            "items": [
+                {
+                    "School": "University of Maryland, College Park",
+                    "Degree": "Doctorate of Philosophy",
+                    "Department": "Computer Science",
+                    "Date-Started": "2021",
+                    "Date-Finished": "2026(Expected)",
+                    "Location": "Maryland, USA"
                 },
                 {
-                    "Company": "Unnamed Startup1",
-                    "Position": "Engineering Intern",
-                    "Date-Started": "Jun 2019",
-                    "Date-Finished": "Sep 2019",
-                    "Text": "Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
-                    "Skills": [
-                        "C++",
-                        "Unix"
-                    ]
-                },
-                {
-                    "Company": "Unnamed Startup2",
-                    "Position": "Engineering Intern",
-                    "Date-Started": "Jun 2019",
-                    "Date-Finished": "Sep 2019",
-                    "Text": "Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
-                    "Skills": [
-                        "C++",
-                        "Unix"
-                    ]
-                },
-                {
-                    "Company": "Unnamed Startup3",
-                    "Position": "Engineering Intern",
-                    "Date-Started": "Jun 2019",
-                    "Date-Finished": "Sep 2019",
-                    "Text": "Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
-                    "Skills": [
-                        "C++",
-                        "Unix"
-                    ]
-                },
-                {
-                    "Company": "Unnamed Startup4",
-                    "Position": "Engineering Intern",
-                    "Date-Started": "Jun 2019",
-                    "Date-Finished": "Sep 2019",
-                    "Text": "Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
-                    "Skills": [
-                        "C++",
-                        "Unix"
-                    ]
-                },
-                {
-                    "Company": "Unnamed Startup1",
-                    "Position": "Engineering Intern",
-                    "Date-Started": "Jun 2019",
-                    "Date-Finished": "Sep 2019",
-                    "Text": "Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
-                    "Skills": [
-                        "C++",
-                        "Unix"
-                    ]
-                },
-                {
-                    "Company": "Unnamed Startup2",
-                    "Position": "Engineering Intern",
-                    "Date-Started": "Jun 2019",
-                    "Date-Finished": "Sep 2019",
-                    "Text": "Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
-                    "Skills": [
-                        "C++",
-                        "Unix"
-                    ]
-                },
-                {
-                    "Company": "Unnamed Startup3",
-                    "Position": "Engineering Intern",
-                    "Date-Started": "Jun 2019",
-                    "Date-Finished": "Sep 2019",
-                    "Text": "Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
-                    "Skills": [
-                        "C++",
-                        "Unix"
-                    ]
-                },
-                {
-                    "Company": "Unnamed Startup4",
-                    "Position": "Engineering Intern",
-                    "Date-Started": "Jun 2019",
-                    "Date-Finished": "Sep 2019",
-                    "Text": "Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
-                    "Skills": [
-                        "C++",
-                        "Unix"
-                    ]
+                    "School": "Middle East Technical University",
+                    "Degree": "Bachelor of Engineering",
+                    "Department": "Computer Engineering",
+                    "Date-Started": "2017",
+                    "Date-Finished": "2021",
+                    "Location": "Ankara, Turkey",
+                    "Text": "GPA: 3.66/4.0 ***(top 5% in class of 229)***"
                 }
             ]
         }
