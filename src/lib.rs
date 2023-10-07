@@ -13,7 +13,7 @@ mod margin;
 pub mod pdf_layout;
 pub mod png_layout;
 mod point;
-mod resume_data;
+pub mod resume_data;
 mod resume_layout;
 mod spatial_box;
 mod width;
